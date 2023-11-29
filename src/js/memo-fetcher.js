@@ -52,6 +52,19 @@ export const memoFetchAndDecode = async (url) => {
 
   const response = await fetch(url);
   const data = await response.json();
-  localStorage.setItem(url, JSON.stringify(data));
+
+  const saveToLocalStorage = (url, data) => {
+    try {
+      localStorage.setItem(url, JSON.stringify(data));
+    } catch (e) {
+      // remove the oldest entry and try again
+      const keys = Object.keys(localStorage);
+      localStorage.removeItem(keys[0]);
+      saveToLocalStorage(url, data);
+    }
+  }
+
+  saveToLocalStorage(url, data);
+
   return data;
 }
