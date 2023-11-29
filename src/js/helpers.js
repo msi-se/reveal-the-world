@@ -297,3 +297,9 @@ export const getOutlineForLatLng = async (lat, lng) => {
   const latLngs = convertGeoJsonCoordsToLeafletLatLng(data[0].geojson.coordinates);
   return latLngs;
 };
+
+export const getRandomPastelColor = () => {
+  const hue = Math.floor(Math.random() * 360);
+  const pastel = `hsl(${hue}, 100%, 80%)`;
+  return pastel;
+}

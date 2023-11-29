@@ -2,6 +2,7 @@
   <div style="height: 100vh; width: 100vw">
     <l-map
       :center="[47.41322, -1.219482]"
+      :zoom="5"
       @click="onClickOnMap"
       :min-zoom="1"
       :max-zoom="10"
@@ -12,15 +13,15 @@
         min-zoom="1"
         max-zoom="14"
         inertia-max-speed="500"
-        attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+        attribution="&copy; <a href=&quot;https://stadiamaps.com/&quot;>Stadia Maps</a>, &copy; <a href=&quot;https://openmaptiles.org/&quot;>OpenMapTiles</a> &copy; <a href=&quot;http://openstreetmap.org&quot;>OpenStreetMap</a> contributors"
       />
       <l-polygon
-        v-for="(polygon, index) in polygons"
-        :key="index"
+        v-for="polygon in polygons"
+        :key="polygon.key"
         :lat-lngs="polygon.latlngs"
         :color="polygon.color"
-        :weight="1"
-        :fill-opacity="0.2"
+        :weight="0"
+        :fill-opacity="0.8"
         :fill="true"
         :fill-color="polygon.color"
       />
@@ -43,7 +44,8 @@ import {
   getObjectFromLocalStorage,
   formatAddressObject,
   findHumanPlaceName,
-  getOutlineForLatLng
+  getOutlineForLatLng,
+getRandomPastelColor
 } from "./js/helpers.js";
 
 export default {
@@ -79,7 +81,7 @@ export default {
       this.polygons.push({
         key: this.polygons.length + 1,
         latlngs: polygonLatlngs,
-        color: "red"
+        color: getRandomPastelColor()
       });
     }
   }
