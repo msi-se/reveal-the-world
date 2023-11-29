@@ -1,4 +1,17 @@
 <template>
+  <input
+    v-if="!isLogged"
+    type="text"
+    placeholder="Login"
+    v-model="login"
+    @keyup.enter="loginUser"
+  >
+  <div v-if="isLogged">
+    <div>Logged in as {{ login }}</div>
+    <button @click="logoutUser">
+      Logout
+    </button>
+  </div>
   <div style="height: 100vh; width: 100vw">
     <l-map
       :center="[47.41322, -1.219482]"
@@ -61,7 +74,9 @@ export default {
       tileLayerOptions: {
         maxZoom: 18,
         minZoom: 1
-      }
+      },
+      isLogged: false,
+      login: ""
     };
   },
   computed: {},
@@ -83,6 +98,30 @@ export default {
         latlngs: polygonLatlngs,
         color: getRandomPastelColor()
       });
+    },
+    /**
+     * Triggered when the user clicks on the login input
+     */
+    loginUser() {
+      if (this.login.length > 0) {
+        this.isLogged = true;
+        localStorage.setItem("login", this.login);
+      }
+    },
+    /**
+     * Triggered when the user clicks on the logout button
+     */
+    logoutUser() {
+      this.isLogged = false;
+      this.login = "";
+      localStorage.removeItem("login");
+    }
+  },
+  mounted() {
+    const login = localStorage.getItem("login");
+    if (login) {
+      this.login = login;
+      this.isLogged = true;
     }
   }
 };
