@@ -36,10 +36,17 @@
       placeholder="How much did you spend? (in €)"
       style="width: 100%;"
     >
-    <button @click="cancel">
+    <button @click="$emit('cancel')">
       Cancel
     </button>
-    <button @click="save">
+    <button @click="$emit('save', {
+      name: this.name,
+      description: this.description,
+      date: this.date,
+      companions: this.companions,
+      duration: this.duration,
+      budget: this.budget
+    })">
       Save
     </button>
   </div>
@@ -48,7 +55,6 @@
 <script>
 export default {
   name: 'HelloWorld',
-  props: {},
   emits: ['cancel', 'save'],
   data() {
     return {
@@ -61,19 +67,6 @@ export default {
     }
   },
   methods: {
-    cancel() {
-      this.$emit('cancel')
-    },
-    save() {
-      this.$emit('save', {
-        name: this.name,
-        description: this.description,
-        date: this.date,
-        companions: this.companions,
-        duration: this.duration,
-        budget: this.budget
-      })
-    }
   }
   
 
