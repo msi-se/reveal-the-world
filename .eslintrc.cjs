@@ -1,6 +1,8 @@
 /* eslint-env node */
 require('@rushstack/eslint-patch/modern-module-resolution')
 
+// disable no-unused-vars eslint rule
+
 module.exports = {
   root: true,
   'extends': [
@@ -9,6 +11,9 @@ module.exports = {
     '@vue/eslint-config-prettier/skip-formatting'
   ],
   parserOptions: {
-    ecmaVersion: 'latest'
-  }
+    ecmaVersion: 'latest',
+  },
+  rules: {
+    'no-unused-vars': 'off',
+  },
 }
