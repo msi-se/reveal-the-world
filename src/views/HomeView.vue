@@ -53,11 +53,11 @@
   </main>
 </template>
 <script>
-import { LMap, LTileLayer, LControlLayers, LRectangle, LPolygon } from '@vue-leaflet/vue-leaflet'
-import 'leaflet/dist/leaflet.css'
-import DataInputDialog from '../components/DataInputDialog.vue'
-import { getOutlineForLatLng, getRandomPastelColor } from '../js/helpers.js'
-import * as requests from '../js/requests.js'
+import { LMap, LTileLayer, LControlLayers, LRectangle, LPolygon } from "@vue-leaflet/vue-leaflet"
+import "leaflet/dist/leaflet.css"
+import DataInputDialog from "../components/DataInputDialog.vue"
+import { getOutlineForLatLng, getRandomPastelColor } from "../js/helpers.js"
+import * as requests from "../js/requests.js"
 
 export default {
   components: {
@@ -77,7 +77,7 @@ export default {
         minZoom: 1
       },
       isLoggedIn: false,
-      login: '',
+      login: "",
       clickedOnMap: false,
       selectedCoords: { lat: 0, lng: 0 }
     }
@@ -102,9 +102,9 @@ export default {
      */
     async loginUser() {
       if (this.login.length > 0) {
-        requests.createUser({ name: this.login, age: 0, homeLocation: '' })
+        requests.createUser({ name: this.login, age: 0, homeLocation: "" })
         this.isLoggedIn = true
-        localStorage.setItem('login', this.login)
+        localStorage.setItem("login", this.login)
 
         this.markers = []
         this.polygons = []
@@ -117,8 +117,8 @@ export default {
      */
     logoutUser() {
       this.isLoggedIn = false
-      this.login = ''
-      localStorage.removeItem('login')
+      this.login = ""
+      localStorage.removeItem("login")
     },
     /**
      * Saves the data from the DataInputDialog
@@ -131,7 +131,7 @@ export default {
      * @param {string} data.budget
      */
     async saveData(data) {
-      console.log('saveData', data)
+      console.log("saveData", data)
 
       const { lat, lng } = this.selectedCoords
       const saveResponse = await requests.createPin({
@@ -152,8 +152,9 @@ export default {
         latlng: [lat, lng]
       })
 
-      // add also the polygon
-      const polygonLatlngs = await getOutlineForLatLng(lat, lng)
+      // add also the polygon (returned by the post request)
+      console.log("saveResponse", saveResponse)
+      let polygonLatlngs = saveResponse.polygon;
       this.polygons.push({
         key: this.polygons.length + 1,
         latlngs: polygonLatlngs,
@@ -182,7 +183,7 @@ export default {
 
       // fetch the outline for the pins
       pins.forEach(async (pin) => {
-        const polygonLatlngs = await getOutlineForLatLng(pin.latitude, pin.longitude)
+        const polygonLatlngs = pin.polygon
         this.polygons.push({
           key: this.polygons.length + 1,
           latlngs: polygonLatlngs,
@@ -192,11 +193,11 @@ export default {
     }
   },
   async mounted() {
-    const login = localStorage.getItem('login')
-    console.log('login', login)
+    const login = localStorage.getItem("login")
+    console.log("login", login)
     if (login) {
       const user = await requests.getUser(login)
-      console.log('user', user)
+      console.log("user", user)
       this.login = login
       this.isLoggedIn = true
 
