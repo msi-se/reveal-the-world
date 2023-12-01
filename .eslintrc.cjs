@@ -15,5 +15,6 @@ module.exports = {
   },
   rules: {
     'no-unused-vars': 'off',
+    'vue/no-unused-components': 'off',
   },
 }
