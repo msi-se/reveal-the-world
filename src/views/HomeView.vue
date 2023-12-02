@@ -57,6 +57,7 @@ import { LMap, LTileLayer, LControlLayers, LRectangle, LPolygon } from "@vue-lea
 import "leaflet/dist/leaflet.css"
 import DataInputDialog from "../components/DataInputDialog.vue"
 import { getOutlineForLatLng, getRandomPastelColor } from "../js/helpers.js"
+import { getPolygonAndName } from "../js/helpers-new.js"
 import * as requests from "../js/requests.js"
 
 export default {

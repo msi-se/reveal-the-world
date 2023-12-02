@@ -18,14 +18,63 @@ async function main() {
     // connect to mongo and read the database
     await client.connect();
     const database = client.db("reveal-the-world");
-    const userCollection = database.collection("users");
-    const pinCollection = database.collection("pins");
+    const userCollection = database.collection("user");
+    const pinCollection = database.collection("pin");
+    const polygonCollection = database.collection("polygon");
+
+    // create a view that joins the pin and polygon collections (but first drop the view if it already exists)
+    await database.command({ drop: "pinWithPolygonView" });
+    await database.command({
+        create: "pinWithPolygonView",
+        viewOn: "pin",
+        pipeline: [
+            {
+                $lookup: {
+                    from: "polygon",
+                    localField: "polygonname",
+                    foreignField: "polygonname",
+                    as: "polygondata",
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    username: 1,
+                    longitude: 1,
+                    latitude: 1,
+                    name: 1,
+                    description: 1,
+                    date: 1,
+                    companions: 1,
+                    duration: 1,
+                    budget: 1,
+                    polygon: "$polygondata.polygon"
+                },
+            },
+            {
+                $unwind: {
+                    path: "$polygon",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+        ],
+    });
+    const pinWithPolygonView = database.collection("pinWithPolygonView");
 
     // print out the current users and pins
     const users = await userCollection.find({}).toArray();
-    console.log(users);
+    console.log("users", users);
     const pins = await pinCollection.find({}).toArray();
-    console.log(pins);
+    console.log("pins", pins);
+    const polygons = await polygonCollection.find({}).toArray();
+    console.log("polygons", polygons);
+    const pinsWithPolygon = await pinWithPolygonView.find({}).toArray();
+    console.log("pinsWithPolygon", pinsWithPolygon);
+
+    // await userCollection.deleteMany({});
+    // await pinCollection.deleteMany({});
+    // await polygonCollection.deleteMany({});
 
     // configure different endpoints
     app.get("/user", async (req, res) => {
@@ -55,7 +104,7 @@ async function main() {
     });
 
     app.get("/pin/:username", async (req, res) => {
-        const pins = await pinCollection.find({ username: req.params.username }).toArray();
+        const pins = await pinWithPolygonView.find({ username: req.params.username }).toArray();
         res.send(pins);
     });
 
@@ -64,10 +113,14 @@ async function main() {
         const pin = req.body;
 
         // fetch the polygon outline from nominatim
-        const polygon = await getOutlineForLatLng(pin.latitude, pin.longitude);
+        const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
+        pin.polygonname = polygonname;
+        await pinCollection.insertOne(pin);
+
+        // save the polygon outline to the database to not have to fetch it again
+        await polygonCollection.insertOne({ polygonname, polygon });
         pin.polygon = polygon;
 
-        await pinCollection.insertOne(pin);
         res.send(pin);
     });
 
@@ -85,160 +138,97 @@ async function main() {
 }
 
 
-/**
-* Get a place from nominatim by coordinates
-* @param {{lat: number, lng: number}} coords
-* @param {number} zoom
-* @returns {Promise<any>}
-*/
-const getPlaceByCoords = async (coords, zoom = 20) => {
-    console.log(`getPlaceByCoords: ${coords.lat}, ${coords.lng}`);
-    let data = await fetch(
-        // eslint-disable-next-line max-len
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&zoom=${5}`,
-    );
-    data = await data.json();
-    if (data === undefined) return;
-    const place = getPlaceByNominatimData(data, coords);
-    console.log(place);
-    if (place?.realCoords?.lat === undefined || place?.realCoords?.lng === undefined) {
-        place.realCoords = coords;
-    }
-    return place;
-};
 
-/**
- * Converts the coordinates of a GeoJSON polygon to the format used by Leaflet
- * @param {number[]} coords The coordinates of the GeoJSON polygon
- * @returns {number[][]} The coordinates of the Leaflet polygon
- */
-const convertGeoJsonCoordsToLeafletLatLng = coords => {
-    if (coords === undefined) return [];
+const getPolygonAndName = async (lat, lng) => {
 
-    const transformCoords = coords => {
-        if (
-            Array.isArray(coords) &&
-            coords.length === 2 &&
-            typeof coords[0] === "number" &&
-            typeof coords[1] === "number"
-        ) {
-            return { lat: coords[1], lng: coords[0] };
+    const convertGeoJsonCoordsToLeafletLatLng = coords => {
+        if (coords === undefined) return [];
+
+        const transformCoords = coords => {
+            if (
+                Array.isArray(coords) &&
+                coords.length === 2 &&
+                typeof coords[0] === "number" &&
+                typeof coords[1] === "number"
+            ) {
+                return { lat: coords[1], lng: coords[0] };
+            }
+            return coords.map(transformCoords);
+        };
+
+        const latLngs = transformCoords(coords);
+
+        return latLngs;
+    };
+
+    let polygon = null;
+    let name = null;
+    let zoom = 8;
+
+    let wasTooBig = false;
+    let wasTooSmall = false;
+
+    let maxZoom = 10;
+    let minZoom = 5;
+
+    for (let tryIndex = 0; tryIndex < 10; tryIndex++) {
+
+        // prepare the reverse geocoding request options
+        let reverseRequestOptions = {
+            lat: lat,
+            lon: lng,
+            format: "geojson",
+            zoom: zoom,
+            addressdetails: 1,
+            extratags: 1,
+            polygon_geojson: 1,
+            polygon_threshold: 0.005,
+        };
+
+        // fetch the reverse geocoding response
+        // @ts-ignore
+        const url = `https://nominatim.openstreetmap.org/reverse?${new URLSearchParams(reverseRequestOptions)}`;
+        const reverseResponse = await fetch(url);
+        if (!reverseResponse.ok) throw new Error(`HTTP error! status: ${reverseResponse.status}`);
+        const reverseResponseJson = await reverseResponse.json();
+
+        // first check if there is a feature
+        if (!reverseResponseJson.features || reverseResponseJson.features?.length === 0) {
+            zoom--;
+            continue;
         }
-        return coords.map(transformCoords);
-    };
 
-    const latLngs = transformCoords(coords);
+        let region = reverseResponseJson.features[0];
 
-    return latLngs;
-};
+        // calculate the area and check if it is too big or too small
+        let minArea = 3;
+        let maxArea = 17;
+        let bbox = region.bbox;
+        let area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]);
+        // console.log(`Area: ${area.toFixed(2)}`);
+        if (area < minArea && !wasTooBig && zoom > minZoom) {
+            // console.log(`Region is too small , zooming out to ${zoom - 1}`);
+            zoom--;
+            wasTooSmall = true;
+            continue;
+        } else if (area > maxArea && !wasTooSmall && zoom < maxZoom) {
+            // console.log(`Region is too big, zooming in to ${zoom + 1}`);
+            zoom++;
+            wasTooBig = true;
+            continue;
+        }
 
-const getOutlineForLatLng = async (lat, lng) => {
-    const placeName = (await getPlaceByCoords({ lat: lat, lng: lng }, 10))?.name;
-    console.log(`getOutlineForLatLng: ${placeName}`);
-    let data = await fetch(
-        // eslint-disable-next-line max-len
-        `https://nominatim.openstreetmap.org/search?q=${placeName}&format=json&limit=1&polygon_geojson=1&polygon_threshold=0.0005`,
-    );
-    data = await data.json();
-    // check if the response is suited for a polygon outline
-    if (
-        data[0]?.geojson?.coordinates === undefined ||
-        data[0]?.geojson?.type === undefined ||
-        data[0]?.boundingbox === undefined ||
-        (data[0]?.geojson?.type !== "Polygon" && data[0]?.geojson?.type !== "MultiPolygon") ||
-        (data[0]?.class !== "boundary" && data[0]?.class !== "place" && data[0]?.class !== "landuse")
-    ) {
-        return [];
+        // if it has a polygon, use it
+        if (region.geometry.type === "Polygon" || region.geometry.type === "MultiPolygon") {
+            let polygonInGeoJSON = region.geometry.coordinates;
+            name = region.properties.name;
+            polygon = convertGeoJsonCoordsToLeafletLatLng(polygonInGeoJSON);
+            // console.log("Region has a polygon: ", polygon);
+            break;
+        }
     }
 
-
-    const latLngs = convertGeoJsonCoordsToLeafletLatLng(data[0].geojson.coordinates);
-    return latLngs;
-};
-
-
-/**
- * Get a place from nominatim response data
- * @param {any} placeData
- * @param {{ lat: number, lng: number}  | undefined } userInputCoords
- * @returns {any}
- */
-const getPlaceByNominatimData = (placeData, userInputCoords) => {
-    if (placeData === undefined) return;
-
-    const convertLongOsmTypeTo1Letter = osmType => {
-        switch (osmType) {
-            case "node":
-                return "N";
-            case "way":
-                return "W";
-            case "relation":
-                return "R";
-            default:
-                return "";
-        }
-    };
-
-    let place = {
-        name: placeData?.display_name || "Unknown location",
-        address: {
-            amenity: placeData?.address?.amenity || "",
-            city: placeData?.address?.city || "",
-            cityDistrict: placeData?.address?.city_district || "",
-            municipality: placeData?.address?.municipality || "",
-            country: placeData?.address?.country || "",
-            countryCode: placeData?.address?.country_code || "",
-            neighbourhood: placeData?.address?.neighbourhood || "",
-            postcode: placeData?.address?.postcode || "",
-            road: placeData?.address?.road || "",
-            houseNumber: placeData?.address?.house_number || "",
-            state: placeData?.address?.state || "",
-            suburb: placeData?.address?.suburb || "",
-        },
-        type: placeData?.type || "",
-        importance: placeData?.importance ? parseFloat(placeData?.lat) : 0,
-        osmId:
-            placeData?.osm_type && placeData?.osm_id
-                ? `${convertLongOsmTypeTo1Letter(placeData?.osm_type)}${placeData?.osm_id}`
-                : "",
-        realCoords: {
-            lat: placeData?.lat ? parseFloat(placeData?.lat) : undefined,
-            lng: placeData?.lon ? parseFloat(placeData?.lon) : undefined,
-        },
-        userInputCoords: {
-            lat: userInputCoords?.lat ? userInputCoords.lat : placeData?.lat ? parseFloat(placeData?.lat) : undefined,
-            lng: userInputCoords?.lng ? userInputCoords.lng : placeData?.lon ? parseFloat(placeData?.lon) : undefined,
-        },
-        zoomLevel: getZoomByBoundingBox(placeData?.boundingbox) || 10,
-        wikidata: placeData?.extratags?.wikidata || "",
-        wikipedia: placeData?.extratags?.wikipedia || "",
-        searchedByCoords: false,
-        searchedByCurrentLocation: false,
-        searchedByPlace: false,
-        searchedByAddress: false,
-    };
-    return place;
-};
-
-/**
- * Get the zoom level by a given bounding box
- * @param {number[] | string[] | undefined} boundingbox
- * @returns {number | undefined}
- * @see https://wiki.openstreetmap.org/wiki/Zoom_levels
- * @see https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Zoom_levels
- */
-const getZoomByBoundingBox = boundingbox => {
-    if (boundingbox === undefined) return undefined;
-
-    const lat1 = parseFloat(`${boundingbox[0]}`);
-    const lat2 = parseFloat(`${boundingbox[1]}`);
-    const lng1 = parseFloat(`${boundingbox[2]}`);
-    const lng2 = parseFloat(`${boundingbox[3]}`);
-    const latDiff = Math.abs(lat1 - lat2);
-    const lngDiff = Math.abs(lng1 - lng2);
-    const maxDiff = Math.max(latDiff, lngDiff);
-    const zoom = Math.min(Math.round(Math.log(360 / maxDiff) / Math.log(2)), 18);
-    return zoom;
-};
+    return { polygon, polygonname: name };
+}
 
 main().catch(console.error);

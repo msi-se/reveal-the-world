@@ -2,18 +2,21 @@ const backendUrl = 'http://localhost:8081';
 
 export async function getUser(username) {
     const response = await fetch(`${backendUrl}/user/${username}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
     const user = await response.json();
     return user;
 }
 
 export async function getPinsOfUser(username) {
     const response = await fetch(`${backendUrl}/pin/${username}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
     const pins = await response.json();
     return pins;
 }
 
 export async function getAllPins() {
     const response = await fetch(`${backendUrl}/pin`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
     const pins = await response.json();
     return pins;
 }
@@ -42,6 +45,8 @@ export async function createPin(pin) {
         },
         body: JSON.stringify(pin)
     });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
     const createdPin = await response.json();
     return createdPin;
 }
@@ -63,6 +68,8 @@ export async function createUser(user) {
         },
         body: JSON.stringify(user)
     });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
     const createdUser = await response.json();
     return createdUser;
 }
