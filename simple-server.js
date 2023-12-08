@@ -144,6 +144,10 @@ async function main() {
 
         // fetch the polygon outline from nominatim
         const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
+        if (!polygon) {
+            res.status(400).send("Could not find polygon");
+            return;
+        }
         pin.polygonname = polygonname;
         await pinCollection.insertOne(pin);
 
@@ -172,15 +176,37 @@ async function main() {
     app.post("/dummyheatregion", async (req, res) => {
         const pin = req.body;
 
+        // if there is a polygonname, use it
+        if (pin.polygonname) {
+            console.log("pin.polygonname", pin.polygonname);
+            // check if the polygon already exists in the heatRegion collection
+            const existingHeatRegion = await heatRegionCollection.findOne({ polygonname: pin.polygonname });
+            if (existingHeatRegion) {
+                existingHeatRegion.count++;
+                await heatRegionCollection.updateOne({ polygonname: pin.polygonname }, { $set: { count: existingHeatRegion.count } });
+            } else {
+                await heatRegionCollection.insertOne({ polygonname: pin.polygonname, count: 1 });
+            }
+
+            // return all heat regions
+            const heatRegions = await heatRegionWithPolygonView.find({}).toArray();
+            res.send(heatRegions);
+            console.log("heatRegions", heatRegions);
+            return;
+        }
+
         // fetch the polygon outline from nominatim
         const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
+        if (!polygon) {
+            res.send( await heatRegionWithPolygonView.find({}).toArray() );
+            return;
+        }
 
         // check if the polygon already exists in the heatRegion collection
         const existingHeatRegion = await heatRegionCollection.findOne({ polygonname });
         if (existingHeatRegion) {
             existingHeatRegion.count++;
             await heatRegionCollection.updateOne({ polygonname }, { $set: { count: existingHeatRegion.count } });
-            return;
         } else {
             await heatRegionCollection.insertOne({ polygonname, count: 1 });
 
@@ -245,7 +271,7 @@ const getPolygonAndName = async (lat, lng) => {
             addressdetails: 1,
             extratags: 1,
             polygon_geojson: 1,
-            polygon_threshold: 0.005,
+            polygon_threshold: 0.5,
         };
 
         // fetch the reverse geocoding response

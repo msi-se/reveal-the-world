@@ -26,6 +26,7 @@
           :fill-opacity="polygon.opacity"
           :fill="true"
           :fill-color="polygon.color"
+          @click="onClickOnPolygon(polygon)"
         />
       </l-map>
     </div>
@@ -60,6 +61,12 @@ export default {
       
       console.log("clicked on map", lat, lng);
       let newHeatRegions = await requests.createHeatRegionPin({ longitude: lng, latitude: lat })
+      console.log("newHeatRegions", newHeatRegions);
+      this.updateHeatRegions(newHeatRegions)
+    },
+    async onClickOnPolygon(polygon) {
+      console.log("clicked on polygon", polygon);
+      let newHeatRegions = await requests.createHeatRegionPin({ polygonname: polygon.key })
       console.log("newHeatRegions", newHeatRegions);
       this.updateHeatRegions(newHeatRegions)
     },

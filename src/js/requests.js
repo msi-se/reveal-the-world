@@ -83,7 +83,7 @@ export async function getHeatRegions() {
 }
 
 /**
- * @param {{longitude: number, latitude: number}} pin
+ * @param {{longitude: number | null, latitude: number | null, polygonname: string | null}} pin
  */
 export async function createHeatRegionPin(pin) {
     const response = await fetch(`${backendUrl}/dummyheatregion`, {
