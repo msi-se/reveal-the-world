@@ -191,7 +191,6 @@ async function main() {
             // return all heat regions
             const heatRegions = await heatRegionWithPolygonView.find({}).toArray();
             res.send(heatRegions);
-            console.log("heatRegions", heatRegions);
             return;
         }
 

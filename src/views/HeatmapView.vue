@@ -51,22 +51,27 @@ export default {
         minZoom: 1
       },
       /** @type {Array<{key: number, latlngs: number[][], color: string , opacity: number}>} */
-      polygons: []
+      polygons: [],
+      clickedOnPolygon: false
     }
   },
   computed: {},
   methods: {
     async onClickOnMap(event) {
+      if (this.clickedOnPolygon) return;
       const { lat, lng } = event.latlng || {}
       if (isNaN(lat) || isNaN(lng)) return;
+      console.log("onClickOnMap", lat, lng);
     
       let newHeatRegions = await requests.createHeatRegionPin({ longitude: lng, latitude: lat, polygonname: null })
       this.updateHeatRegions(newHeatRegions)
     },
     async onClickOnPolygon(polygon) {
-      
+      console.log("onClickOnPolygon");
+      this.clickedOnPolygon = true;
       let newHeatRegions = await requests.createHeatRegionPin({ longitude: null, latitude: null, polygonname: polygon.key })
       this.updateHeatRegions(newHeatRegions)
+      this.clickedOnPolygon = false;
     },
     async fetchHeatRegions() {
       let heatRegions = await requests.getHeatRegions()
