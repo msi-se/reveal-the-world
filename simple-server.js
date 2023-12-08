@@ -21,8 +21,9 @@ async function main() {
     const userCollection = database.collection("user");
     const pinCollection = database.collection("pin");
     const polygonCollection = database.collection("polygon");
+    const heatRegionCollection = database.collection("heatRegion");
 
-    // create a view that joins the pin and polygon collections (but first drop the view if it already exists)
+    // create a view that joins the pin and polygon collections
     await database.command({ drop: "pinWithPolygonView" });
     await database.command({
         create: "pinWithPolygonView",
@@ -61,6 +62,35 @@ async function main() {
         ],
     });
     const pinWithPolygonView = database.collection("pinWithPolygonView");
+
+    // create a view that joins the heatRegion and polygon collections
+    await database.command({ drop: "heatRegionWithPolygonView" });
+    // polygon: {_id: id, polygonname: string, polygon: []}
+    // heatRegion: {_id: id, polygonname: string, count: number}
+    // heatRegionWithPolygonView: {_id: id, polygonname: string, polygon: [], count: number}
+    await database.command({
+        create: "heatRegionWithPolygonView",
+        viewOn: "heatRegion",
+        pipeline: [
+            {
+                $lookup: {
+                    from: "polygon",
+                    localField: "polygonname",
+                    foreignField: "polygonname",
+                    as: "polygondata",
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    polygonname: 1,
+                    polygon: "$polygondata.polygon",
+                    count: 1,
+                },
+            },
+        ],
+    });
+    const heatRegionWithPolygonView = database.collection("heatRegionWithPolygonView");
 
     // print out the current users and pins
     const users = await userCollection.find({}).toArray();
@@ -133,6 +163,39 @@ async function main() {
         const pin = await pinCollection.findOne({ id: req.params.id });
         res.send(pin);
     });
+
+    app.get("/heatregion", async (req, res) => {
+        const heatRegions = await heatRegionWithPolygonView.find({}).toArray();
+        res.send(heatRegions);
+    });
+
+    app.post("/dummyheatregion", async (req, res) => {
+        const pin = req.body;
+
+        // fetch the polygon outline from nominatim
+        const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
+
+        // check if the polygon already exists in the heatRegion collection
+        const existingHeatRegion = await heatRegionCollection.findOne({ polygonname });
+        if (existingHeatRegion) {
+            existingHeatRegion.count++;
+            await heatRegionCollection.updateOne({ polygonname }, { $set: { count: existingHeatRegion.count } });
+            return;
+        } else {
+            await heatRegionCollection.insertOne({ polygonname, count: 1 });
+
+            // save the polygon outline to the database to not have to fetch it again
+            const existingPolygon = await polygonCollection.findOne({ polygonname });
+            if (!existingPolygon) {
+                await polygonCollection.insertOne({ polygonname, polygon });
+            }
+        }
+
+        // return all heat regions
+        const heatRegions = await heatRegionWithPolygonView.find({}).toArray();
+        res.send(heatRegions);
+    });
+
 
     app.listen(port, () => console.log(`Example app listening on http://localhost:${port}`));
 }

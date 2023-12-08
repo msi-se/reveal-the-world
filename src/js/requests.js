@@ -74,3 +74,27 @@ export async function createUser(user) {
     return createdUser;
 }
 
+
+export async function getHeatRegions() {
+    const response = await fetch(`${backendUrl}/heatregion`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
+    const heatRegions = await response.json();
+    return heatRegions;
+}
+
+/**
+ * @param {{longitude: number, latitude: number}} pin
+ */
+export async function createHeatRegionPin(pin) {
+    const response = await fetch(`${backendUrl}/dummyheatregion`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(pin)
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
+    const createdPin = await response.json();
+    return createdPin;
+}
