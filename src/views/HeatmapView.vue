@@ -23,10 +23,11 @@
           :lat-lngs="polygon.latlngs"
           :color="polygon.color"
           :weight="0"
-          :fill-opacity="polygon.opacity"
+          :fill-opacity="0.5"
           :fill="true"
           :fill-color="polygon.color"
           @click="onClickOnPolygon(polygon)"
+          :smooth-factor="0"
         />
       </l-map>
     </div>
@@ -58,16 +59,13 @@ export default {
     async onClickOnMap(event) {
       const { lat, lng } = event.latlng || {}
       if (isNaN(lat) || isNaN(lng)) return;
-      
-      console.log("clicked on map", lat, lng);
-      let newHeatRegions = await requests.createHeatRegionPin({ longitude: lng, latitude: lat })
-      console.log("newHeatRegions", newHeatRegions);
+    
+      let newHeatRegions = await requests.createHeatRegionPin({ longitude: lng, latitude: lat, polygonname: null })
       this.updateHeatRegions(newHeatRegions)
     },
     async onClickOnPolygon(polygon) {
-      console.log("clicked on polygon", polygon);
-      let newHeatRegions = await requests.createHeatRegionPin({ polygonname: polygon.key })
-      console.log("newHeatRegions", newHeatRegions);
+      
+      let newHeatRegions = await requests.createHeatRegionPin({ longitude: null, latitude: null, polygonname: polygon.key })
       this.updateHeatRegions(newHeatRegions)
     },
     async fetchHeatRegions() {
@@ -76,18 +74,11 @@ export default {
     },
     async updateHeatRegions(heatRegions) {
 
-      console.log("updateHeatRegions", heatRegions);
+      // console.log("updateHeatRegions", heatRegions);
 
       const getDesityColorForFloat = (float) => {
-        const densityColors = [
-          "#1d4877",
-          "#1b8a5a",
-          "#fbb021",
-          "#f68838",
-          "#ee3e32",
-        ]
-        const index = Math.floor(float * densityColors.length);
-        return densityColors[index];
+        let h = (1.0 - float) * 240
+        return "hsl(" + h + ", 100%, 50%)";
       }
 
       // compute density
@@ -98,9 +89,10 @@ export default {
           density: region.count / maxCount
         }
       })
-      console.log("heatRegions", heatRegions);
+      // console.log("heatRegions", heatRegions);
 
       // create polygons
+      this.polygons = [];
       heatRegions.forEach((region) => {
         const polygon = {
           key: region.polygonname,
@@ -111,7 +103,7 @@ export default {
         this.polygons.push(polygon)
       })
 
-      console.log("this.polygons", this.polygons);
+      // console.log("this.polygons", this.polygons);
     }
   },
   async mounted() {

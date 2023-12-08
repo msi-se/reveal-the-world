@@ -222,6 +222,18 @@ async function main() {
         res.send(heatRegions);
     });
 
+    app.get("/dummyheatregionmockit", async (req, res) => {
+        const heatRegions = await heatRegionWithPolygonView.find({}).toArray();
+
+        // for all heat regions, add a random count between 0 and 100
+        heatRegions.forEach(async heatRegion => {
+            heatRegion.count = Math.floor(Math.random() * 100);
+            await heatRegionCollection.updateOne({ polygonname: heatRegion.polygonname }, { $set: { count: heatRegion.count } });
+        });
+
+        res.send(heatRegions);
+    });
+
 
     app.listen(port, () => console.log(`Example app listening on http://localhost:${port}`));
 }
@@ -271,7 +283,7 @@ const getPolygonAndName = async (lat, lng) => {
             addressdetails: 1,
             extratags: 1,
             polygon_geojson: 1,
-            polygon_threshold: 0.5,
+            polygon_threshold: 0.005,
         };
 
         // fetch the reverse geocoding response
