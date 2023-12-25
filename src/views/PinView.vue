@@ -69,7 +69,7 @@ export default {
   },
   data() {
     return {
-      /** @type {Array<{key: number, latlngs: number[][], color: string}>} */
+      /** @type {Array<{key: number, latlngs: number[][], color: string, polygonname: string}>} */
       polygons: [],
       /** @type {Array<{key: number, latlng: number[]}>} */
       markers: [],
@@ -159,15 +159,16 @@ export default {
       this.polygons.push({
         key: this.polygons.length + 1,
         latlngs: polygonLatlngs,
-        color: getRandomPastelColor()
+        color: getRandomPastelColor(),
+        polygonname: saveResponse.polygonname
       })
-      this.clickedOnMap = false
+      this.clickedOnMap = false;
     },
     /**
      * Cancels the DataInputDialog
      */
     cancelData() {
-      this.clickedOnMap = false
+      this.clickedOnMap = false;
     },
     async updatePinsAndPolygons() {
       this.markers = []
@@ -182,15 +183,19 @@ export default {
         })
       })
 
+      console.log("pins", pins)
+
       // fetch the outline for the pins
-      pins.forEach(async (pin) => {
+      for (let i = 0; i < pins.length; i++) {
+        const pin = pins[i];
         const polygonLatlngs = pin.polygon
         this.polygons.push({
           key: this.polygons.length + 1,
           latlngs: polygonLatlngs,
-          color: getRandomPastelColor()
+          color: getRandomPastelColor(),
+          polygonname: pin.polygonname
         })
-      })
+      }
     }
   },
   async mounted() {

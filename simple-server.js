@@ -50,7 +50,8 @@ async function main() {
                     companions: 1,
                     duration: 1,
                     budget: 1,
-                    polygon: "$polygondata.polygon"
+                    polygon: "$polygondata.polygon",
+                    polygonname: 1,
                 },
             },
             {
