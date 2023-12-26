@@ -16,11 +16,11 @@ await mongoose.connect(MONDODB_URI);
 
 // start express server
 const app = express();
-const port = 3000;
+const port = 3002;
 
 // define routes
 app.get("/", (req, res) => {
-    res.json({ message: "Hello from template-service" });
+    res.json({ message: "Hello from pin-service" });
 });
 
 app.listen(port, () => console.log(`Example app listening on http://localhost:${port}`));
