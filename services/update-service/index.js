@@ -53,7 +53,8 @@ app.post("/", async (req, res) => {
 
     // aggregate the pins by polygon
     const heatRegions = [];
-    pins.forEach(async (pin) => {
+    for (let i = 0; i < pins.length; i++) {
+        const pin = pins[i];
         const polygonname = pin.polygonname;
         const polygon = await polygonCollection.findOne({ polygonname: polygonname });
         if (polygon) {
@@ -64,7 +65,7 @@ app.post("/", async (req, res) => {
                 heatRegions[index].count++;
             }
         }
-    });
+    };
 
     // calculate the density for each region
     const maxDensity = heatRegions.reduce((max, heatRegion) => Math.max(max, heatRegion.count), 0);

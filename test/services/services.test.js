@@ -10,7 +10,7 @@
 let token = "";
 
 describe("user-service-test", () => {
-    
+
     it("check if user service is running", async () => {
         const response = await fetch("http://localhost/api/user");
         expect(response.status).toEqual(200);
@@ -188,4 +188,26 @@ describe("update-service-test", () => {
         });
         expect(response.status).toEqual(200);
     });
+});
+
+describe("heatmap-service-test", () => {
+
+    it("check if the heatmap can be retrieved", async () => {
+        const response = await fetch("http://localhost/api/heatmap/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        expect(response.status).toEqual(200);
+        const responseBody = await response.json();
+        expect(responseBody).toBeDefined();
+        responseBody.heatRegions.forEach((heatRegion) => {
+            expect(heatRegion.polygonname).toBeDefined();
+            expect(heatRegion.density > 0 && heatRegion.density <= 1).toBeTruthy();
+            expect(heatRegion.count > 0).toBeTruthy();
+        });
+    });
+
 });
