@@ -7,6 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), "../.env") });
 const MONDODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost";
 
 // connect to MongoDB
 const client = new MongoClient(MONDODB_URI);
@@ -80,7 +81,7 @@ app.post("/", async (req, res) => {
     }
 
     // verify token by using the user service
-    const verifyResponse = await fetch("http://localhost/api/user/verify", {
+    const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -120,7 +121,7 @@ app.get("/:username", async (req, res) => {
     }
 
     // verify token by using the user service
-    const verifyResponse = await fetch("http://localhost/api/user/verify", {
+    const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
