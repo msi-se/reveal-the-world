@@ -1,5 +1,5 @@
 import express from "express";
-import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 import jwt from "jsonwebtoken";
 
 // use .env file in parent directory (only needed for local development)
@@ -11,26 +11,21 @@ const MONDODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
 const JWT_SECRET = process.env.JWT_SECRET || "TEST_SECRET";
 
 // connect to MongoDB
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", () => console.log("Connected to MongoDB"));
-await mongoose.connect(MONDODB_URI);
+const client = new MongoClient(MONDODB_URI);
+await client.connect();
+const database = client.db("reveal-the-world");
+
+// setup collections
+const userCollection = database.collection("user");
 
 // start express server
 const app = express();
 const port = 3001;
 app.use(express.json());
 
-// define user schema and model
-const userSchema = new mongoose.Schema({
-    username: String,
-    password: String
-});
-const User = mongoose.model("User", userSchema);
-
 // define routes
 app.get("/", (req, res) => {
-    res.send("User service is running");
+    res.status(200).send("User service is running");
 });
 
 app.post("/login", async (req, res) => {
@@ -43,14 +38,14 @@ app.post("/login", async (req, res) => {
     }
 
     // check if user exists
-    const existingUser = await User.find({ username: username });
-    if (existingUser.length === 0) {
+    const existingUser = await userCollection.findOne({ username: username });
+    if (!existingUser) {
         // create new user
-        const newUser = new User({ username: username, password: password });
-        await newUser.save();
+        const newUser = { username: username, password: password };
+        await userCollection.insertOne(newUser);
     } else {
         // check if password is correct
-        if (existingUser[0].password !== password) {
+        if (existingUser.password !== password) {
             res.status(400).send("Wrong password");
             return;
         }
