@@ -79,7 +79,7 @@ app.get("/", async (req, res) => {
     }
 
     // get the current heat region state
-    const heatRegionState = await heatRegionStateCollection.findOne({}, { sort: { timestamp: -1 } });
+    const heatRegionState = await heatRegionStateCollection.find({}).sort({ timestamp: -1 }).limit(1).next();
     if (!heatRegionState) {
         res.status(400).send("No heat region state found");
         return;
@@ -87,7 +87,6 @@ app.get("/", async (req, res) => {
 
     // send the heat region state
     res.status(200).send(heatRegionState);
-
 });
 
 // start the server

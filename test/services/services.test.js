@@ -11,12 +11,12 @@ let token = "";
 
 describe("user-service-test", () => {
 
-    it("check if user service is running", async () => {
+    test("check if user service is running", async () => {
         const response = await fetch("http://localhost/api/user");
         expect(response.status).toEqual(200);
     });
 
-    it("check if a user can register", async () => {
+    test("check if a user can register", async () => {
         const response = await fetch("http://localhost/api/user/login", {
             method: "POST",
             headers: {
@@ -39,7 +39,7 @@ describe("user-service-test", () => {
 
     });
 
-    it("check if a user can login with the registered credentials", async () => {
+    test("check if a user can login with the registered credentials", async () => {
         const response = await fetch("http://localhost/api/user/login", {
             method: "POST",
             headers: {
@@ -62,7 +62,7 @@ describe("user-service-test", () => {
 
     });
 
-    it("check if the verification of a token works", async () => {
+    test("check if the verification of a token works", async () => {
         const response = await fetch("http://localhost/api/user/verify", {
             method: "POST",
             headers: {
@@ -96,7 +96,7 @@ describe("user-service-test", () => {
         expect(invalidResponse.status).toEqual(400);
     });
 
-    it("check if the verification of a token works with the token in the header", async () => {
+    test("check if the verification of a token works with the token in the header", async () => {
         const response = await fetch("http://localhost/api/user/verify", {
             method: "POST",
             headers: {
@@ -129,12 +129,12 @@ describe("pin-service-test", () => {
         budget: "testbudget"
     };
 
-    it("check if pin service is running", async () => {
+    test("check if pin service is running", async () => {
         const response = await fetch("http://localhost/api/pin");
         expect(response.status).toEqual(200);
     });
 
-    it("check if a pin can be created", async () => {
+    test("check if a pin can be created", async () => {
         const response = await fetch("http://localhost/api/pin/", {
             method: "POST",
             body: JSON.stringify(pin),
@@ -153,7 +153,7 @@ describe("pin-service-test", () => {
         expect(responseBody.polygon).toBeDefined();
     });
 
-    it("check if the pins of a user can be retrieved", async () => {
+    test("check if the pins of a user can be retrieved", async () => {
         const response = await fetch("http://localhost/api/pin/testuser", {
             method: "GET",
             headers: {
@@ -173,12 +173,12 @@ describe("pin-service-test", () => {
 
 describe("update-service-test", () => {
 
-    it("check if update service is running", async () => {
+    test("check if update service is running", async () => {
         const response = await fetch("http://localhost/api/update");
         expect(response.status).toEqual(200);
     });
 
-    it("check if the update service can be triggered", async () => {
+    test("check if the update service can be triggered", async () => {
         const response = await fetch("http://localhost/api/update/", {
             method: "POST",
             headers: {
@@ -192,7 +192,7 @@ describe("update-service-test", () => {
 
 describe("heatmap-service-test", () => {
 
-    it("check if the heatmap can be retrieved", async () => {
+    test("check if the heatmap can be retrieved", async () => {
         const response = await fetch("http://localhost/api/heatmap/", {
             method: "GET",
             headers: {
@@ -209,5 +209,122 @@ describe("heatmap-service-test", () => {
             expect(heatRegion.count > 0).toBeTruthy();
         });
     });
+
+    test("check if the heatmap is correct", async () => {
+
+        // add some pins
+        const pins = [
+            {
+                username: "testuser",
+                longitude: 9.932852983474733,
+                latitude: 47.52115319917437,
+                name: "Irgendwo in Vorarlberg",
+                description: "testdescription",
+                date: "testdate",
+                companions: "testcompanions",
+                duration: "testduration",
+                budget: "testbudget"
+            },
+            {
+                username: "testuser",
+                longitude: 11.568603515625,
+                latitude: 48.144097934938884,
+                name: "Irgendwo in Bayern",
+                description: "testdescription",
+                date: "testdate",
+                companions: "testcompanions",
+                duration: "testduration",
+                budget: "testbudget"
+            },
+            {
+                username: "testuser",
+                longitude: 11.568603515625,
+                latitude: 48.144097934938884,
+                name: "Irgendwo in Bayern",
+                description: "testdescription",
+                date: "testdate",
+                companions: "testcompanions",
+                duration: "testduration",
+                budget: "testbudget"
+            },
+            {
+                username: "testuser",
+                longitude: 9.255981445312502,
+                latitude: 47.9264654516972,
+                name: "Irgendwo in Baden-Württemberg",
+                description: "testdescription",
+                date: "testdate",
+                companions: "testcompanions",
+                duration: "testduration",
+                budget: "testbudget"
+            },
+            {
+                username: "testuser",
+                longitude: 13.386840820312502,
+                latitude: 52.51622086393074,
+                name: "Irgendwo in Berlin",
+                description: "testdescription",
+                date: "testdate",
+                companions: "testcompanions",
+                duration: "testduration",
+                budget: "testbudget"
+            }
+        ];
+
+        for (let i = 0; i < pins.length; i++) {
+            const response = await fetch("http://localhost/api/pin/", {
+                method: "POST",
+                body: JSON.stringify(pins[i]),
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+            });
+            expect(response.status).toEqual(200);
+        }
+
+        // trigger the update service
+        const updateResponse = await fetch("http://localhost/api/update/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        expect(updateResponse.status).toEqual(200);
+
+        // wait for x seconds to make sure the update service has finished
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+
+        // get the heatmap
+        const heatmapResponse = await fetch("http://localhost/api/heatmap/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        // check if the response is good
+        expect(heatmapResponse.status).toEqual(200);
+        const responseBody = await heatmapResponse.json();
+        expect(responseBody).toBeDefined();
+        console.log(responseBody);
+
+        // check if the densities are correct
+        const voralberg = responseBody.heatRegions.find((heatRegion) => heatRegion.polygonname === "Vorarlberg");
+        expect(voralberg.density).toEqual(1);
+        expect(voralberg.count).toEqual(2);
+        const bayern = responseBody.heatRegions.find((heatRegion) => heatRegion.polygonname === "Bayern");
+        expect(bayern.density).toEqual(1);
+        expect(bayern.count).toEqual(2);
+        const badenWuerttemberg = responseBody.heatRegions.find((heatRegion) => heatRegion.polygonname === "Baden-Württemberg");
+        expect(badenWuerttemberg.density).toEqual(0.5);
+        expect(badenWuerttemberg.count).toEqual(1);
+        const berlin = responseBody.heatRegions.find((heatRegion) => heatRegion.polygonname === "Berlin");
+        expect(berlin.density).toEqual(0.5);
+        expect(berlin.count).toEqual(1);
+    }, 60000);
+
 
 });
