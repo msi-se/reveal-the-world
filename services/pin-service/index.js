@@ -96,7 +96,15 @@ app.post("/", async (req, res) => {
     let pin = req.body;
 
     // fetch the polygon outline from nominatim
-    const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
+    const { polygon, polygonname } = await fetch(`${BACKEND_URL}/api/pin/region`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ lat: pin.latitude, lng: pin.longitude }),
+    }).then(res => res.json());
+
     if (!polygon) {
         res.status(400).send("Could not find polygon");
         return;
@@ -105,7 +113,6 @@ app.post("/", async (req, res) => {
     await pinCollection.insertOne(pin);
 
     // save the polygon outline to the database to not have to fetch it again
-    await polygonCollection.insertOne({ polygonname, polygon });
     pin.polygon = polygon;
 
     res.send(pin);
@@ -135,6 +142,52 @@ app.get("/:username", async (req, res) => {
     const pins = await pinWithPolygonView.find({ username: req.params.username }).toArray();
     res.send(pins);
 });
+
+app.post("/region", async (req, res) => {
+
+    // takes in a lat and lng and returns a polygon that is the region around that point
+    // it also stores the polygon in the database so that it does not have to be fetched again
+    // it replaces the getPolygonAndName function (but uses it)
+
+    // check if token is valid (from Authorization header (Bearer token))
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        res.status(400).send("Token missing");
+        return;
+    }
+
+    // verify token by using the user service
+    const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: token }),
+    });
+    if (!verifyResponse.ok) {
+        res.status(400).send("Invalid token");
+        return;
+    }
+
+    const { lat, lng } = req.body;
+    
+    // fetch the polygon outline from nominatim
+    const { polygon, polygonname } = await getPolygonAndName(lat, lng);
+    if (!polygon) {
+        res.status(400).send("Could not find polygon");
+        return;
+    }
+
+    // save the polygon outline to the database to not have to fetch it again if it is not already there
+    const existingPolygon = await polygonCollection.findOne({ polygonname });
+    if (!existingPolygon) {
+        await polygonCollection.insertOne({ polygonname, polygon });
+    }
+
+    res.send({ polygonname, polygon });
+
+});
+
 
 app.listen(port, () => console.log(`Example app listening on http://localhost:${port}`));
 
