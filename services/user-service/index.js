@@ -58,8 +58,17 @@ app.post("/login", async (req, res) => {
 
 app.post("/verify", async (req, res) => {
     
-    // get token from request body
-    const { token } = req.body;
+    // get token from request body or header
+    let { token } = req.body;
+    if (!token) {
+        const authorizationHeader = req.headers.authorization;
+        if (authorizationHeader) {
+            const tokenParts = authorizationHeader.split(" ");
+            if (tokenParts.length === 2 && tokenParts[0] === "Bearer") {
+                token = tokenParts[1];
+            }
+        }
+    }
     if (!token) {
         res.status(400).send("Token missing");
         return;
