@@ -73,20 +73,13 @@ app.get("/", (req, res) => {
 
 app.post("/", async (req, res) => {
 
-    // check if token is valid (from Authorization header (Bearer token))
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        res.status(400).send("Token missing");
-        return;
-    }
-
     // verify token by using the user service
     const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            "Authorization": req.headers.authorization || "",
         },
-        body: JSON.stringify({ token: token }),
     });
     if (!verifyResponse.ok) {
         res.status(400).send("Invalid token");
@@ -100,7 +93,7 @@ app.post("/", async (req, res) => {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: req.headers.authorization || "",
         },
         body: JSON.stringify({ lat: pin.latitude, lng: pin.longitude }),
     }).then(res => res.json());
@@ -120,20 +113,13 @@ app.post("/", async (req, res) => {
 
 app.get("/:username", async (req, res) => {
 
-    // check if token is valid (from Authorization header (Bearer token))
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        res.status(400).send("Token missing");
-        return;
-    }
-
     // verify token by using the user service
     const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            "Authorization": req.headers.authorization || "",
         },
-        body: JSON.stringify({ token: token }),
     });
     if (!verifyResponse.ok) {
         res.status(400).send("Invalid token");
@@ -149,20 +135,13 @@ app.post("/region", async (req, res) => {
     // it also stores the polygon in the database so that it does not have to be fetched again
     // it replaces the getPolygonAndName function (but uses it)
 
-    // check if token is valid (from Authorization header (Bearer token))
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        res.status(400).send("Token missing");
-        return;
-    }
-
     // verify token by using the user service
     const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
+            "Authorization": req.headers.authorization || "",
         },
-        body: JSON.stringify({ token: token }),
     });
     if (!verifyResponse.ok) {
         res.status(400).send("Invalid token");

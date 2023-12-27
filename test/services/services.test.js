@@ -119,9 +119,9 @@ describe("pin-service-test", () => {
     // pin: {username: string, longitude: number, latitude: number, name: string, description: string, date: string, companions: string, duration: string, budget: string}
     const pin = {
         username: "testuser",
-        longitude: 47.98105173441768,
-        latitude: 10.03543083869168,
-        name: "Irgendwo in Ba-Wü",
+        longitude: 9.932852983474733,
+        latitude: 47.52115319917437,
+        name: "Irgendwo in Vorarlberg",
         description: "testdescription",
         date: "testdate",
         companions: "testcompanions",
@@ -169,4 +169,23 @@ describe("pin-service-test", () => {
         }
     });
 
+});
+
+describe("update-service-test", () => {
+
+    it("check if update service is running", async () => {
+        const response = await fetch("http://localhost/api/update");
+        expect(response.status).toEqual(200);
+    });
+
+    it("check if the update service can be triggered", async () => {
+        const response = await fetch("http://localhost/api/update/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        expect(response.status).toEqual(200);
+    });
 });
