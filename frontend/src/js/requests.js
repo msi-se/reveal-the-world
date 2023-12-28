@@ -31,15 +31,17 @@ export async function getPinsOfUser(username, token) {
 
 /**
  * @param {{username: string, longitude: number, latitude: number, name: string, description: string, date: string, companions: string, duration: string, budget: string}} pin
+ * @param {string} token
  */
-export async function createPin(pin) {
+export async function createPin(pin, token) {
     console.log(JSON.stringify(pin));
-    const response = await fetch(`${backendUrl}/pin`, {
-        method: 'POST',
+    const response = await fetch(`${backendUrl}/pin/`, {
+        method: "POST",
+        body: JSON.stringify(pin),
         headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(pin)
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        }
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);

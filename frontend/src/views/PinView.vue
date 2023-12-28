@@ -175,7 +175,7 @@ export default {
         budget: data.budget,
         latitude: lat,
         longitude: lng
-      })
+      }, this.token)
 
       // add the marker
       this.markers.push({
