@@ -18,7 +18,7 @@ const database = client.db("reveal-the-world");
 const pinCollection = database.collection("pin");
 const polygonCollection = database.collection("polygon");
 // heatRegionsState = { timestamp: string, heatRegions: [{ polygonname: string, density: number (0-1), count: number }] }
-const heatRegionStateCollection = database.collection("heatRegion");
+const heatRegionStateCollection = database.collection("heatRegionState");
 const analyticsStateCollection = database.collection("analytics");
 
 

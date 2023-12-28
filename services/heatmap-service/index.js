@@ -18,7 +18,7 @@ const database = client.db("reveal-the-world");
 const pinCollection = database.collection("pin");
 const polygonCollection = database.collection("polygon");
 // heatRegionsState = { timestamp: string, heatRegions: [{ polygonname: string, density: number (0-1), count: number }] }
-const heatRegionStateCollection = database.collection("heatRegion");
+const heatRegionStateCollection = database.collection("heatRegionState");
 
 // create a view that joins the heatRegion and polygon collections
 await database.command({ drop: "heatRegionStateWithPolygonView" });
@@ -49,13 +49,11 @@ await database.command({
             },
         },
         {
-            $unwind: {
-                path: "$heatRegions",
-                preserveNullAndEmptyArrays: true,
-            },
-        },
+            $unwind: "$heatRegions.polygon"
+        }        
     ],
 });
+const heatRegionStateWithPolygonView = database.collection("heatRegionStateWithPolygonView");
 
 // start express server
 const app = express();
@@ -66,23 +64,32 @@ app.use(express.json());
 app.get("/", async (req, res) => {
 
     // verify token by using the user service
-    const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": req.headers.authorization || "",
-        },
-    });
-    if (!verifyResponse.ok) {
-        res.status(400).send("Invalid token");
-        return;
-    }
+    // const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
+    //     method: "POST",
+    //     headers: {
+    //         "Content-Type": "application/json",
+    //         "Authorization": req.headers.authorization || "",
+    //     },
+    // });
+    // if (!verifyResponse.ok) {
+    //     res.status(400).send("Invalid token");
+    //     return;
+    // }
 
     // get the current heat region state
     const heatRegionState = await heatRegionStateCollection.find({}).sort({ timestamp: -1 }).limit(1).next();
     if (!heatRegionState) {
         res.status(400).send("No heat region state found");
         return;
+    }
+
+    // TEMP: add polygon data to the heat region state (later this should be done in the view)
+    for (let i = 0; i < heatRegionState.heatRegions.length; i++) {
+        const heatRegion = heatRegionState.heatRegions[i];
+        const polygon = await polygonCollection.findOne({ polygonname: heatRegion.polygonname });
+        if (polygon) {
+            heatRegion.polygon = polygon.polygon;
+        }
     }
 
     // send the heat region state

@@ -4,7 +4,6 @@
       <l-map
         :center="[47.41322, -1.219482]"
         :zoom="5"
-        @click="onClickOnMap"
         :min-zoom="1"
         :max-zoom="10"
         :zoom-animation="true"
@@ -26,7 +25,6 @@
           :fill-opacity="0.5"
           :fill="true"
           :fill-color="polygon.color"
-          @click="onClickOnPolygon(polygon)"
           :smooth-factor="0"
         />
       </l-map>
@@ -50,70 +48,46 @@ export default {
         maxZoom: 18,
         minZoom: 1
       },
-      /** @type {Array<{key: number, latlngs: number[][], color: string , opacity: number}>} */
+      /** @type {Array<{key: string, latlngs: number[][], color: string , opacity: number}>} */
       polygons: [],
       clickedOnPolygon: false
     }
   },
   computed: {},
   methods: {
-    async onClickOnMap(event) {
-      if (this.clickedOnPolygon) return;
-      const { lat, lng } = event.latlng || {}
-      if (isNaN(lat) || isNaN(lng)) return;
-      console.log("onClickOnMap", lat, lng);
-    
-      let newHeatRegions = await requests.createHeatRegionPin({ longitude: lng, latitude: lat, polygonname: null })
-      this.updateHeatRegions(newHeatRegions)
-    },
-    async onClickOnPolygon(polygon) {
-      console.log("onClickOnPolygon");
-      this.clickedOnPolygon = true;
-      let newHeatRegions = await requests.createHeatRegionPin({ longitude: null, latitude: null, polygonname: polygon.key })
-      this.updateHeatRegions(newHeatRegions)
-      this.clickedOnPolygon = false;
-    },
-    async fetchHeatRegions() {
-      let heatRegions = await requests.getHeatRegions()
-      return heatRegions
-    },
-    async updateHeatRegions(heatRegions) {
-
-      // console.log("updateHeatRegions", heatRegions);
+    async loadHeatRegions() {
 
       const getDesityColorForFloat = (float) => {
         let h = (1.0 - float) * 240
         return "hsl(" + h + ", 100%, 50%)";
       }
 
-      // compute density
-      const maxCount = heatRegions.reduce((max, region) => { return Math.max(max, region.count) }, 0)
-      heatRegions = heatRegions.map((region) => {
-        return {
-          ...region,
-          density: region.count / maxCount
-        }
-      })
-      // console.log("heatRegions", heatRegions);
+      // get heat regions
+      let heatmapData = await requests.getHeatmapData()
+      console.log("heatmapData", heatmapData);
+      if (!heatmapData) {
+        return
+      }
 
-      // create polygons
+      // create the polygons
+      let heatRegions = heatmapData.heatRegions;
       this.polygons = [];
-      heatRegions.forEach((region) => {
+      for (let i = 0; i < heatRegions.length; i++) {
+        let region = heatRegions[i];
         const polygon = {
           key: region.polygonname,
           latlngs: region.polygon,
           color: getDesityColorForFloat(region.density),
-          opacity: 1 //region.density
+          opacity: region.density
         }
         this.polygons.push(polygon)
-      })
+      }
 
-      // console.log("this.polygons", this.polygons);
+      console.table(this.polygons);
     }
   },
   async mounted() {
-    const heatRegions = await this.fetchHeatRegions()
-    this.updateHeatRegions(heatRegions)
+    this.loadHeatRegions()
   }
 
 }
