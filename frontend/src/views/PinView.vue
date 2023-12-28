@@ -1,18 +1,31 @@
 <template>
   <main>
-    <input
-      v-if="!isLoggedIn"
-      type="text"
-      placeholder="Login"
-      v-model="login"
-      @keyup.enter="loginUser"
-    />
+    <div v-if="!isLoggedIn">
+
+      <v-alert type="warning" :value="true">
+        You have to login to see your travel pins...
+      </v-alert>
+      <input
+        type="text"
+        placeholder="Username"
+        v-model="username"
+        @keyup.enter="loginUser"
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        v-model="password"
+        @keyup.enter="loginUser"
+      />
+      <button @click="loginUser">Login</button>
+    </div>
+
     <div v-if="isLoggedIn">
-      <div>Logged in as {{ login }}</div>
+      <div>Logged in as {{ username }}</div>
       <button @click="logoutUser">Logout</button>
     </div>
     <DataInputDialog v-if="clickedOnMap" @save="saveData" @cancel="cancelData" />
-    <div style="height: 90vh; width: 90vw">
+    <div v-if="isLoggedIn" style="height: 90vh; width: 90vw">
       <l-map
         :center="[47.41322, -1.219482]"
         :zoom="5"
@@ -78,7 +91,9 @@ export default {
         minZoom: 1
       },
       isLoggedIn: false,
-      login: "",
+      username: "",
+      password: "",
+      token: "",
       clickedOnMap: false,
       selectedCoords: { lat: 0, lng: 0 }
     }
@@ -87,7 +102,7 @@ export default {
   methods: {
     /**
      * Triggered when the user clicks on the map
-     * @param {L.LeafletMouseEvent} event
+     * @param event
      */
     async onClickOnMap(event) {
       const { lat, lng } = event.latlng || {}
@@ -102,10 +117,25 @@ export default {
      * Triggered when the user clicks on the login input
      */
     async loginUser() {
-      if (this.login.length > 0) {
-        requests.createUser({ name: this.login, age: 0, homeLocation: "" })
+      if (this.username && this.password) {
+
+        const token = await requests.login({
+          username: this.username,
+          password: this.password
+        });
+
+        if (!token) {
+          alert("Login failed")
+          return
+        }
+
+        // store the jwt token in the local storage
+        localStorage.setItem("jwt", token)
+        localStorage.setItem("username", this.username)
+
+        // update the state
+        this.token = token
         this.isLoggedIn = true
-        localStorage.setItem("login", this.login)
 
         this.markers = []
         this.polygons = []
@@ -118,8 +148,8 @@ export default {
      */
     logoutUser() {
       this.isLoggedIn = false
-      this.login = ""
-      localStorage.removeItem("login")
+      localStorage.removeItem("jwt")
+      localStorage.removeItem("username")
     },
     /**
      * Saves the data from the DataInputDialog
@@ -136,7 +166,7 @@ export default {
 
       const { lat, lng } = this.selectedCoords
       const saveResponse = await requests.createPin({
-        username: this.login,
+        username: this.username,
         name: data.name,
         description: data.description,
         date: data.date,
@@ -175,7 +205,7 @@ export default {
       this.polygons = []
 
       // fetch the pins for the logged in user and add them to the map
-      const pins = await requests.getPinsOfUser(this.login)
+      const pins = await requests.getPinsOfUser(this.username, this.token)
       pins.forEach((pin) => {
         this.markers.push({
           key: this.markers.length + 1,
@@ -185,7 +215,7 @@ export default {
 
       console.log("pins", pins)
 
-      // fetch the outline for the pins
+      // create the polygons for the pins
       for (let i = 0; i < pins.length; i++) {
         const pin = pins[i];
         const polygonLatlngs = pin.polygon
@@ -199,15 +229,19 @@ export default {
     }
   },
   async mounted() {
-    const login = localStorage.getItem("login")
-    console.log("login", login)
-    if (login) {
-      const user = await requests.getUser(login)
-      console.log("user", user)
-      this.login = login
-      this.isLoggedIn = true
+    const token = localStorage.getItem("jwt")
+    if (token) {
 
-      await this.updatePinsAndPolygons()
+      const verificationResponse = await requests.verifyToken(token)
+      const username = verificationResponse;
+      this.token = token
+
+      if (username) {
+        this.isLoggedIn = true
+        this.username = username
+        await this.updatePinsAndPolygons()
+      }
+
     }
   }
 }

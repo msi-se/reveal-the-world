@@ -1,21 +1,17 @@
-const backendUrl = 'http://localhost:8081';
+const backendUrl = 'http://localhost/api';
 
-export async function getUser(username) {
-    const response = await fetch(`${backendUrl}/user/${username}`);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
-    const user = await response.json();
-    return user;
-}
-
-export async function getPinsOfUser(username) {
-    const response = await fetch(`${backendUrl}/pin/${username}`);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
-    const pins = await response.json();
-    return pins;
-}
-
-export async function getAllPins() {
-    const response = await fetch(`${backendUrl}/pin`);
+/**
+ * @param {string} username
+ * @param {string} token
+ */
+export async function getPinsOfUser(username, token) {
+    const response = await fetch(`${backendUrl}/pin/${username}`, {
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        }
+    });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
     const pins = await response.json();
     return pins;
@@ -51,50 +47,52 @@ export async function createPin(pin) {
     return createdPin;
 }
 
-// user: {
-// name
-// age
-// homeLocation
-// }
-
 /**
- * @param {{name: string, age: number, homeLocation: string}} user
+ * Login user
+ * @param {{username: string, password: string}} user
+ * @returns {Promise<string | null>} token
  */
-export async function createUser(user) {
-    const response = await fetch(`${backendUrl}/user`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(user)
-    });
+export async function login(user) {
+    try {
+        const response = await fetch(`${backendUrl}/user/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        });
+    
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
+        const body = await response.json();
+        return body.token;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
 
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
-    const createdUser = await response.json();
-    return createdUser;
-}
-
-
-export async function getHeatRegions() {
-    const response = await fetch(`${backendUrl}/heatregion`);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
-    const heatRegions = await response.json();
-    return heatRegions;
 }
 
 /**
- * @param {{longitude: number | null, latitude: number | null, polygonname: string | null}} pin
+ * Verify user token
+ * @param {string} token
+ * @returns {Promise<string | null>} username
+ * @throws {Error} if token is invalid
  */
-export async function createHeatRegionPin(pin) {
-    const response = await fetch(`${backendUrl}/dummyheatregion`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(pin)
-    });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
-    const createdPin = await response.json();
-    return createdPin;
+export async function verifyToken(token) {
+    try {
+        const response = await fetch(`${backendUrl}/user/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token: token })
+        });
+    
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
+        const body = await response.json();
+        return body.username;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
 }
