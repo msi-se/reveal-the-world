@@ -8,6 +8,7 @@
 //  - how to run: `node clear-collections.js; npx jest`
 
 let token = "";
+let dateInLastMonth = new Date("2023-11-25");
 
 describe("user-service-test", () => {
 
@@ -123,7 +124,7 @@ describe("pin-service-test", () => {
         latitude: 47.52115319917437,
         name: "Irgendwo in Vorarlberg",
         description: "testdescription",
-        date: "testdate",
+        date: dateInLastMonth.toISOString(),
         companions: "testcompanions",
         duration: "testduration",
         budget: "testbudget"
@@ -220,7 +221,7 @@ describe("heatmap-service-test", () => {
                 latitude: 47.52115319917437,
                 name: "Irgendwo in Vorarlberg",
                 description: "testdescription",
-                date: "testdate",
+                date: dateInLastMonth.toISOString(),
                 companions: "testcompanions",
                 duration: "testduration",
                 budget: "testbudget"
@@ -231,7 +232,7 @@ describe("heatmap-service-test", () => {
                 latitude: 48.144097934938884,
                 name: "Irgendwo in Bayern",
                 description: "testdescription",
-                date: "testdate",
+                date: dateInLastMonth.toISOString(),
                 companions: "testcompanions",
                 duration: "testduration",
                 budget: "testbudget"
@@ -242,7 +243,7 @@ describe("heatmap-service-test", () => {
                 latitude: 48.144097934938884,
                 name: "Irgendwo in Bayern",
                 description: "testdescription",
-                date: "testdate",
+                date: dateInLastMonth.toISOString(),
                 companions: "testcompanions",
                 duration: "testduration",
                 budget: "testbudget"
@@ -253,7 +254,7 @@ describe("heatmap-service-test", () => {
                 latitude: 47.9264654516972,
                 name: "Irgendwo in Baden-Württemberg",
                 description: "testdescription",
-                date: "testdate",
+                date: dateInLastMonth.toISOString(),
                 companions: "testcompanions",
                 duration: "testduration",
                 budget: "testbudget"
@@ -264,7 +265,7 @@ describe("heatmap-service-test", () => {
                 latitude: 52.51622086393074,
                 name: "Irgendwo in Berlin",
                 description: "testdescription",
-                date: "testdate",
+                date: dateInLastMonth.toISOString(),
                 companions: "testcompanions",
                 duration: "testduration",
                 budget: "testbudget"
@@ -309,7 +310,6 @@ describe("heatmap-service-test", () => {
         expect(heatmapResponse.status).toEqual(200);
         const responseBody = await heatmapResponse.json();
         expect(responseBody).toBeDefined();
-        console.log(responseBody);
 
         // check if the densities are correct
         const voralberg = responseBody.heatRegions.find((heatRegion) => heatRegion.polygonname === "Vorarlberg");
@@ -325,6 +325,85 @@ describe("heatmap-service-test", () => {
         expect(berlin.density).toEqual(0.5);
         expect(berlin.count).toEqual(1);
     }, 60000);
+});
 
+describe("analytics-service-test", () => {
+
+    test("check if the analytics are correct", async () => {
+
+        let analyticsResponse = await fetch("http://localhost/api/analytics/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        expect(analyticsResponse.status).toEqual(200);
+        const responseBody = await analyticsResponse.json();
+        expect(responseBody).toBeDefined();
+        
+        // check if the analytics are present
+        // { bestVisitedRegionInTheLastMonth: region, amountOfPinsTotal: number, amountOfPinsLastMonth: number }
+        expect(responseBody.bestVisitedRegionInTheLastMonth).toBeDefined();
+        expect(responseBody.amountOfPinsTotal).toBeDefined();
+        expect(responseBody.amountOfPinsLastMonth).toBeDefined();
+
+        // check if the analytics are correct
+        expect(responseBody.amountOfPinsTotal).toEqual(6);
+        expect(responseBody.amountOfPinsLastMonth).toEqual(6);
+
+        // create another Bayern pin to have a unique bestVisitedRegionInTheLastMonth
+        const pin = {
+            username: "testuser",
+            longitude: 11.568603515625,
+            latitude: 48.144097934938884,
+            name: "Irgendwo in Bayern",
+            description: "testdescription",
+            date: dateInLastMonth,
+            companions: "testcompanions",
+            duration: "testduration",
+            budget: "testbudget"
+        };
+
+        const response = await fetch("http://localhost/api/pin/", {
+            method: "POST",
+            body: JSON.stringify(pin),
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        // trigger the update service
+        const updateResponse = await fetch("http://localhost/api/update/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+        expect(updateResponse.status).toEqual(200);
+
+        // wait for x seconds to make sure the update service has finished
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+
+        // get the analytics
+        analyticsResponse = await fetch("http://localhost/api/analytics/", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+        });
+
+        // check if the response is good
+        expect(analyticsResponse.status).toEqual(200);
+        const newResponseBody = await analyticsResponse.json();
+        expect(newResponseBody).toBeDefined();
+
+        // check if the bestVisitedRegionInTheLastMonth is correct
+        expect(newResponseBody.bestVisitedRegionInTheLastMonth).toEqual("Bayern");
+
+    }, 60000);
 
 });

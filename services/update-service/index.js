@@ -19,6 +19,8 @@ const pinCollection = database.collection("pin");
 const polygonCollection = database.collection("polygon");
 // heatRegionsState = { timestamp: string, heatRegions: [{ polygonname: string, density: number (0-1), count: number }] }
 const heatRegionStateCollection = database.collection("heatRegion");
+const analyticsStateCollection = database.collection("analytics");
+
 
 // start express server
 const app = express();
@@ -79,6 +81,55 @@ app.post("/", async (req, res) => {
         heatRegions: heatRegions,
     };
     await heatRegionStateCollection.insertOne(heatRegionState);
+
+    /* analytics */
+
+    // calculate bestVisitedRegionInTheLastMonth, amountOfPinsTotal, amountOfPinsLastMonth // TODO: later more analytics properties
+    let bestVisitedRegionInTheLastMonth = "";
+    let amountOfPinsTotal = 0;
+    let amountOfPinsLastMonth = 0;
+
+    let lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    let startOfLastMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1);
+    let endOfLastMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
+    let bestVisitedRegionInTheLastMonthCount = 0;
+
+    // calculate the analytics
+    let aggregatedPinsLastMonth = [];
+    for (let i = 0; i < pins.length; i++) {
+        const pin = pins[i];
+        amountOfPinsTotal++;
+        let pinDate = new Date(pin.date);
+        if (pinDate > startOfLastMonth && pinDate < endOfLastMonth) {
+            amountOfPinsLastMonth++;
+        }
+        if (pin.polygonname) {
+            if (pinDate > startOfLastMonth && pinDate < endOfLastMonth) {
+                const index = aggregatedPinsLastMonth.findIndex((aggregatedPin) => aggregatedPin.polygonname === pin.polygonname);
+                if (index === -1) {
+                    aggregatedPinsLastMonth.push({ polygonname: pin.polygonname, count: 1 });
+                } else {
+                    aggregatedPinsLastMonth[index].count++;
+                }
+            }
+        }
+    };
+    aggregatedPinsLastMonth.forEach((aggregatedPin) => {
+        if (aggregatedPin.count > bestVisitedRegionInTheLastMonthCount) {
+            bestVisitedRegionInTheLastMonthCount = aggregatedPin.count;
+            bestVisitedRegionInTheLastMonth = aggregatedPin.polygonname;
+        }
+    });
+
+    // save the analytics
+    const analyticsState = {
+        timestamp: new Date().toISOString(),
+        bestVisitedRegionInTheLastMonth: bestVisitedRegionInTheLastMonth,
+        amountOfPinsTotal: amountOfPinsTotal,
+        amountOfPinsLastMonth: amountOfPinsLastMonth,
+    };
+    await analyticsStateCollection.insertOne(analyticsState);
 
 });
 
