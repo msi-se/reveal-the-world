@@ -3,13 +3,14 @@ import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
+  <h1>Reveal the World</h1>
   <header>
-    <!-- <div class="wrapper"> -->
+    <div class="wrapper">
       <nav>
-        <RouterLink to="/">My Travel Pins</RouterLink>
-        <RouterLink to="/heatmap">Heatmap</RouterLink>
+        <a href="/">My Travel Pins</a>
+        <a href="/heatmap">Heatmap</a>
       </nav>
-    <!-- </div> -->
+    </div>
   </header>
 
   <RouterView />
