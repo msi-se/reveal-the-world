@@ -1,0 +1,60 @@
+version: "3"
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+  proxy:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./services/default.conf.template:/etc/nginx/templates/default.conf.template
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  user:
+    build: ./services/user-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+  pin:
+    build: ./services/pin-service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+  heatmap:
+    build: ./services/heatmap-service
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+  analytics:
+    build: ./services/analytics-service
+    ports:
+      - "3004:3004"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+  update:
+    build: ./services/update-service
+    ports:
+      - "3005:3005"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+  
