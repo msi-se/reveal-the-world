@@ -1,5 +1,6 @@
 import express from "express";
 import { MongoClient } from "mongodb";
+import pkceChallenge from 'pkce-challenge';
 import jwt from "jsonwebtoken";
 
 // use .env file in parent directory (only needed for local development)
@@ -57,7 +58,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/verify", async (req, res) => {
-    
+
     // get token from request body or header
     let { token } = req.body;
     if (!token) {
@@ -86,5 +87,68 @@ app.post("/verify", async (req, res) => {
         res.status(400).send("Invalid token");
     }
 });
+
+app.get("/test", async (req, res) => {
+    res.cookie("userDetails", "TEST");
+    res.redirect(302, '/');
+});
+
+// const clientId = 'e9fdb985-9173-4e01-9d73-ac2d60d1dc8e';
+// const fusionAuthURL = 'http://localhost:9011';
+
+// const userSession = 'userSession';
+
+// app.get('/login', async (req, res, next) => {
+//     const stateValue = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+//     const pkcePair = await pkceChallenge();
+//     res.cookie(userSession, { stateValue, verifier: pkcePair.code_verifier, challenge: pkcePair.code_challenge }, { httpOnly: true });
+
+//     res.redirect(302, `${fusionAuthURL}/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=http://localhost:${port}/oauth-redirect&state=${stateValue}&code_challenge=${pkcePair}&code_challenge_method=S256`)
+// });
+
+// app.get('/oauth-redirect', async (req, res, next) => {
+//     // Capture query params
+//     const stateFromFusionAuth = `${req.query?.state}`;
+//     const authCode = `${req.query?.code}`;
+
+//     // Validate cookie state matches FusionAuth's returned state
+//     const userSessionCookie = req.cookies[userSession];
+//     if (stateFromFusionAuth !== userSessionCookie?.stateValue) {
+//         console.log("State doesn't match. uh-oh.");
+//         console.log("Saw: " + stateFromFusionAuth + ", but expected: " + userSessionCookie?.stateValue);
+//         res.redirect(302, '/');
+//         return;
+//     }
+
+//     try {
+//         // Exchange Auth Code and Verifier for Access Token
+//         const accessToken = (await client.exchangeOAuthCodeForAccessTokenUsingPKCE(authCode,
+//             clientId,
+//             clientSecret,
+//             `http://localhost:${port}/oauth-redirect`,
+//             userSessionCookie.verifier)).response;
+
+//         if (!accessToken.access_token) {
+//             console.error('Failed to get Access Token')
+//             return;
+//         }
+//         res.cookie(userToken, accessToken, { httpOnly: true })
+
+//         // Exchange Access Token for User
+//         const userResponse = (await client.retrieveUserUsingJWT(accessToken.access_token)).response;
+//         if (!userResponse?.user) {
+//             console.error('Failed to get User from access token, redirecting home.');
+//             res.redirect(302, '/');
+//         }
+//         res.cookie(userDetails, userResponse.user);
+
+//         res.redirect(302, '/');
+//     } catch (err) {
+//         console.error(err);
+//         res.status(err?.statusCode || 500).json(JSON.stringify({
+//             error: err
+//         }))
+//     }
+// });
 
 app.listen(port, () => console.log(`Example app listening on http://localhost:${port}`));

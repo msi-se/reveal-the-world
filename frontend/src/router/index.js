@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import PinView from '../views/PinView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,12 +7,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: PinView
+      component: () => import('../views/HomeView.vue'),
+    },
+    {
+      path: '/pin',
+      name: 'pin',
+      component: () => import('../views/PinView.vue'),
     },
     {
       path: '/heatmap',
       name: 'heatmap',
-      component: () => import('../views/HeatmapView.vue')
+      component: () => import('../views/HeatmapView.vue'),
     }
   ]
 })

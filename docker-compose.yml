@@ -9,7 +9,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./services/default.conf.template:/etc/nginx/templates/default.conf.template
+      - ./default.conf.template:/etc/nginx/templates/default.conf.template
     extra_hosts:
       - "host.docker.internal:host-gateway"
   user:

@@ -1,13 +1,9 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-</script>
-
 <template>
   <h1>Reveal the World</h1>
   <header>
     <div class="wrapper">
       <nav>
-        <a href="/">My Travel Pins</a>
+        <a href="/pin">My Travel Pins</a>
         <a href="/heatmap">Heatmap</a>
       </nav>
     </div>
@@ -15,6 +11,13 @@ import { RouterLink, RouterView } from 'vue-router'
 
   <RouterView />
 </template>
+
+<script setup>
+import { RouterLink, RouterView } from 'vue-router'
+
+console.log(document.cookie);
+</script>
+
 
 <style scoped>
 header {

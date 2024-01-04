@@ -1,10 +1,9 @@
-//tag::top[]
-import FusionAuthClient from "@fusionauth/typescript-client";
+import { FusionAuthClient } from "@fusionauth/node-client";
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import pkceChallenge from 'pkce-challenge';
-import { GetPublicKeyOrSecret, verify } from 'jsonwebtoken';
-import jwksClient, { RsaSigningKey } from 'jwks-rsa';
+import verify from 'jsonwebtoken';
+import jwksClient from 'jwks-rsa';
 import * as path from 'path';
 
 // Add environment variables
@@ -69,42 +68,14 @@ app.use(cookieParser());
 /** Decode Form URL Encoded data */
 app.use(express.urlencoded());
 
-//end::top[]
+app.get('/login', async (req, res, next) => {
+  const stateValue = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const pkcePair = await pkceChallenge();
+  res.cookie(userSession, { stateValue, verifier: pkcePair.code_verifier, challenge: pkcePair.code_challenge }, { httpOnly: true });
 
-// Static Files
-//tag::static[]
-app.use('/static', express.static(path.join(__dirname, '../static/')));
-//end::static[]
-
-//tag::homepage[]
-app.get("/", async (req, res) => {
-  const userTokenCookie = req.cookies[userToken];
-  if (await validateUser(userTokenCookie)) {
-    res.redirect(302, '/account');
-  } else {
-    const stateValue = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const pkcePair = await pkceChallenge();
-    res.cookie(userSession, { stateValue, verifier: pkcePair.code_verifier, challenge: pkcePair.code_challenge }, { httpOnly: true });
-
-    res.sendFile(path.join(__dirname, '../templates/home.html'));
-  }
+  res.redirect(302, `${fusionAuthURL}/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=http://localhost/auth/oauth-redirect&state=${stateValue}&code_challenge=${pkcePair.code_challenge}&code_challenge_method=S256`)
 });
-//end::homepage[]
 
-//tag::login[]
-app.get('/login', (req, res, next) => {
-  const userSessionCookie = req.cookies[userSession];
-
-  // Cookie was cleared, just send back (hacky way)
-  if (!userSessionCookie?.stateValue || !userSessionCookie?.challenge) {
-    res.redirect(302, '/');
-  }
-
-  res.redirect(302, `${fusionAuthURL}/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=http://localhost:${port}/oauth-redirect&state=${userSessionCookie?.stateValue}&code_challenge=${userSessionCookie?.challenge}&code_challenge_method=S256`)
-});
-//end::login[]
-
-//tag::oauth-redirect[]
 app.get('/oauth-redirect', async (req, res, next) => {
   // Capture query params
   const stateFromFusionAuth = `${req.query?.state}`;
@@ -120,12 +91,19 @@ app.get('/oauth-redirect', async (req, res, next) => {
   }
 
   try {
+    console.log(authCode, clientId, clientSecret, userSessionCookie.verifier);
     // Exchange Auth Code and Verifier for Access Token
-    const accessToken = (await client.exchangeOAuthCodeForAccessTokenUsingPKCE(authCode,
+    let response = await client.exchangeOAuthCodeForAccessTokenUsingPKCE(authCode,
       clientId,
       clientSecret,
-      `http://localhost:${port}/oauth-redirect`,
-      userSessionCookie.verifier)).response;
+      `http://localhost/auth/oauth-redirect`,
+      userSessionCookie.verifier);
+    
+    if (response.statusCode !== 200) {
+      console.error('Failed to get Access Token')
+      return;
+    }
+    const accessToken = response.successResponse;
 
     if (!accessToken.access_token) {
       console.error('Failed to get Access Token')
@@ -134,14 +112,21 @@ app.get('/oauth-redirect', async (req, res, next) => {
     res.cookie(userToken, accessToken, { httpOnly: true })
 
     // Exchange Access Token for User
-    const userResponse = (await client.retrieveUserUsingJWT(accessToken.access_token)).response;
+    response = await client.retrieveUserUsingJWT(accessToken.access_token);
+    
+    if (response.statusCode !== 200) {
+      console.error('Failed to get User from access token, redirecting home.');
+      res.redirect(302, '/');
+    }
+    const userResponse = response.successResponse;
+
     if (!userResponse?.user) {
       console.error('Failed to get User from access token, redirecting home.');
       res.redirect(302, '/');
     }
     res.cookie(userDetails, userResponse.user);
 
-    res.redirect(302, '/account');
+    res.redirect(302, '/');
   } catch (err) {
     console.error(err);
     res.status(err?.statusCode || 500).json(JSON.stringify({
@@ -149,77 +134,11 @@ app.get('/oauth-redirect', async (req, res, next) => {
     }))
   }
 });
-//end::oauth-redirect[]
 
-//tag::account[]
-app.get("/account", async (req, res) => {
-  const userTokenCookie = req.cookies[userToken];
-  if (!await validateUser(userTokenCookie)) {
-    res.redirect(302, '/');
-  } else {
-    res.sendFile(path.join(__dirname, '../templates/account.html'));
-  }
-});
-//end::account[]
-
-//tag::make-change[]
-app.get("/make-change", async (req, res) => {
-  const userTokenCookie = req.cookies[userToken];
-  if (!await validateUser(userTokenCookie)) {
-    res.redirect(302, '/');
-  } else {
-    res.sendFile(path.join(__dirname, '../templates/make-change.html'));
-  }
-});
-
-app.post("/make-change", async (req, res) => {
-  const userTokenCookie = req.cookies[userToken];
-  if (!await validateUser(userTokenCookie)) {
-    res.status(403).json(JSON.stringify({
-      error: 'Unauthorized'
-    }))
-    return;
-  }
-
-  let error;
-  let message;
-
-  var coins = {
-    quarters: 0.25,
-    dimes: 0.1,
-    nickels: 0.05,
-    pennies: 0.01,
-  };
-
-  try {
-    message = 'We can make change for';
-    let remainingAmount = +req.body.amount;
-    for (const [name, nominal] of Object.entries(coins)) {
-      let count = Math.floor(remainingAmount / nominal);
-      remainingAmount =
-        Math.round((remainingAmount - count * nominal) * 100) / 100;
-
-      message = `${message} ${count} ${name}`;
-    }
-    `${message}!`;
-  } catch (ex) {
-    error = `There was a problem converting the amount submitted. ${ex.message}`;
-  }
-  res.json(JSON.stringify({
-    error,
-    message
-  }))
-
-});
-//end::make-change[]
-
-//tag::logout[]
 app.get('/logout', (req, res, next) => {
   res.redirect(302, `${fusionAuthURL}/oauth2/logout?client_id=${clientId}`);
 });
-//end::logout[]
 
-//tag::oauth-logout[]
 app.get('/oauth2/logout', (req, res, next) => {
   console.log('Logging out...')
   res.clearCookie(userSession);
@@ -228,11 +147,8 @@ app.get('/oauth2/logout', (req, res, next) => {
 
   res.redirect(302, '/')
 });
-//end::oauth-logout[]
 
 // start the Express server
-//tag::app[]
 app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
 });
-//end::app[]
