@@ -1,7 +1,7 @@
 <template>
     <h1>Home</h1>
     <div v-if="isLoggedIn">
-        <p>Logged in as {{ email }}</p>
+        <p>Logged in as {{ username }}</p>
         <button @click="logout">Logout</button>
     </div>
     <div v-else>
@@ -19,8 +19,8 @@ let isLoggedIn = computed(() => {
     return getUser() !== null;
 });
 
-let email = computed(() => {
-    return getUser().email;
+let username = computed(() => {
+    return getUser().username;
 });
 
 console.log(getUser());

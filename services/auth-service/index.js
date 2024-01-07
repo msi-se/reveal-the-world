@@ -25,9 +25,14 @@ if (!process.env.fusionAuthURL) {
   console.error('Missing clientSecret from .env');
   process.exit();
 }
+if (!process.env.internalFusionAuthURL) {
+  console.error('Missing clientSecret from .env');
+  process.exit();
+}
 const clientId = process.env.clientId;
 const clientSecret = process.env.clientSecret;
 const fusionAuthURL = process.env.fusionAuthURL;
+const internalFusionAuthURL = process.env.internalFusionAuthURL;
 
 // Validate the token signature, make sure it wasn't expired
 const validateUser = async (userTokenCookie) => {
@@ -50,7 +55,7 @@ const validateUser = async (userTokenCookie) => {
 
 const getKey = async (header, callback) => {
   const jwks = jwksClient({
-    jwksUri: `${fusionAuthURL}/.well-known/jwks.json`
+    jwksUri: `${internalFusionAuthURL}/.well-known/jwks.json`
   });
   const key = await jwks.getSigningKey(header.kid);
   var signingKey = key?.getPublicKey() || key?.rsaPublicKey;
@@ -62,7 +67,7 @@ const userSession = 'userSession';
 const userToken = 'userToken';
 const userDetails = 'userDetails'; //Non Http-Only with user info (not trusted)
 
-const client = new FusionAuthClient('noapikeyneeded', fusionAuthURL);
+const client = new FusionAuthClient('noapikeyneeded', internalFusionAuthURL);
 
 app.use(cookieParser());
 /** Decode Form URL Encoded data */

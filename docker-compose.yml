@@ -12,7 +12,7 @@ services:
       - ./default.conf.template:/etc/nginx/templates/default.conf.template
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  auth:
+  auth-service:
     build: ./services/auth-service
     ports:
       - "8080:8080"
@@ -21,8 +21,9 @@ services:
     environment:
       - clientId=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
       - clientSecret=super-secret-secret-that-should-be-regenerated-for-production
-      - fusionAuthURL=http://host.docker.internal:9011
-  user:
+      - fusionAuthURL=http://localhost:9011
+      - internalFusionAuthURL=http://host.docker.internal:9011
+  user-service:
     build: ./services/user-service
     ports:
       - "3001:3001"
@@ -31,7 +32,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
       - BACKEND_URL=http://host.docker.internal
-  pin:
+  pin-service:
     build: ./services/pin-service
     ports:
       - "3002:3002"
@@ -40,7 +41,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
       - BACKEND_URL=http://host.docker.internal
-  heatmap:
+  heatmap-service:
     build: ./services/heatmap-service
     ports:
       - "3003:3003"
@@ -49,7 +50,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
       - BACKEND_URL=http://host.docker.internal
-  analytics:
+  analytics-service:
     build: ./services/analytics-service
     ports:
       - "3004:3004"
@@ -58,7 +59,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
       - BACKEND_URL=http://host.docker.internal
-  update:
+  update-service:
     build: ./services/update-service
     ports:
       - "3005:3005"
