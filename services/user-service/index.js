@@ -2,6 +2,8 @@ import express from "express";
 import { MongoClient } from "mongodb";
 import pkceChallenge from 'pkce-challenge';
 import jwt from "jsonwebtoken";
+import auth from "./auth-middleware.js";
+import cookieParser from 'cookie-parser';
 
 // use .env file in parent directory (only needed for local development)
 import dotenv from "dotenv";
@@ -22,6 +24,7 @@ const userCollection = database.collection("user");
 // start express server
 const app = express();
 const port = 3001;
+app.use(cookieParser());
 app.use(express.json());
 
 // define routes
@@ -88,9 +91,8 @@ app.post("/verify", async (req, res) => {
     }
 });
 
-app.get("/test", async (req, res) => {
-    res.cookie("userDetails", "TEST");
-    res.redirect(302, '/');
+app.get("/test", auth, async (req, res) => {
+    res.json(res.user);
 });
 
 // const clientId = 'e9fdb985-9173-4e01-9d73-ac2d60d1dc8e';

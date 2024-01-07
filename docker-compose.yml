@@ -32,6 +32,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
       - BACKEND_URL=http://host.docker.internal
+      - internalFusionAuthURL=http://host.docker.internal:9011
   pin-service:
     build: ./services/pin-service
     ports:
