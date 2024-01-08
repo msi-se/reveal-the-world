@@ -9,7 +9,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./default.conf.template:/etc/nginx/templates/default.conf.template
+      - ./services/default.conf.template:/etc/nginx/templates/default.conf.template
     extra_hosts:
       - "host.docker.internal:host-gateway"
   auth-service:
@@ -42,6 +42,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
       - BACKEND_URL=http://host.docker.internal
+      - internalFusionAuthURL=http://host.docker.internal:9011
   heatmap-service:
     build: ./services/heatmap-service
     ports:
@@ -51,6 +52,7 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongo:27017
       - BACKEND_URL=http://host.docker.internal
+      - internalFusionAuthURL=http://host.docker.internal:9011
   analytics-service:
     build: ./services/analytics-service
     ports:

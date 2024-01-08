@@ -1,31 +1,7 @@
 <template>
   <main>
-    <div v-if="!isLoggedIn">
-
-      <v-alert type="warning" :value="true">
-        You have to login to see your travel pins...
-      </v-alert>
-      <input
-        type="text"
-        placeholder="Username"
-        v-model="username"
-        @keyup.enter="loginUser"
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        v-model="password"
-        @keyup.enter="loginUser"
-      />
-      <button @click="loginUser">Login</button>
-    </div>
-
-    <div v-if="isLoggedIn">
-      <div>Logged in as {{ username }}</div>
-      <button @click="logoutUser">Logout</button>
-    </div>
     <DataInputDialog v-if="clickedOnMap" @save="saveData" @cancel="cancelData" />
-    <div v-if="isLoggedIn" style="height: 90vh; width: 90vw">
+    <div style="height: 90vh; width: 90vw">
       <l-map
         :center="[47.41322, -1.219482]"
         :zoom="5"
@@ -72,6 +48,8 @@ import DataInputDialog from "../components/DataInputDialog.vue"
 import { getOutlineForLatLng, getRandomPastelColor } from "../js/helpers.js"
 import { getPolygonAndName } from "../js/helpers-new.js"
 import * as requests from "../js/requests.js"
+import { getUser, login, logout } from '../js/user';
+
 
 export default {
   components: {
@@ -90,15 +68,18 @@ export default {
         maxZoom: 18,
         minZoom: 1
       },
-      isLoggedIn: false,
-      username: "",
-      password: "",
-      token: "",
       clickedOnMap: false,
       selectedCoords: { lat: 0, lng: 0 }
     }
   },
-  computed: {},
+  computed: {
+    isLoggedIn() {
+      return getUser() !== null;
+    },
+    username() {
+      return getUser().username;
+    }
+  },
   methods: {
     /**
      * Triggered when the user clicks on the map
@@ -112,44 +93,6 @@ export default {
 
       this.clickedOnMap = true
       this.selectedCoords = { lat, lng }
-    },
-    /**
-     * Triggered when the user clicks on the login input
-     */
-    async loginUser() {
-      if (this.username && this.password) {
-
-        const token = await requests.login({
-          username: this.username,
-          password: this.password
-        });
-
-        if (!token) {
-          alert("Login failed")
-          return
-        }
-
-        // store the jwt token in the local storage
-        localStorage.setItem("jwt", token)
-        localStorage.setItem("username", this.username)
-
-        // update the state
-        this.token = token
-        this.isLoggedIn = true
-
-        this.markers = []
-        this.polygons = []
-
-        await this.updatePinsAndPolygons()
-      }
-    },
-    /**
-     * Triggered when the user clicks on the logout button
-     */
-    logoutUser() {
-      this.isLoggedIn = false
-      localStorage.removeItem("jwt")
-      localStorage.removeItem("username")
     },
     /**
      * Saves the data from the DataInputDialog
@@ -205,7 +148,7 @@ export default {
       this.polygons = []
 
       // fetch the pins for the logged in user and add them to the map
-      const pins = await requests.getPinsOfUser(this.username, this.token)
+      const pins = await requests.getPinsOfUser(this.username)
       pins.forEach((pin) => {
         this.markers.push({
           key: this.markers.length + 1,
@@ -229,20 +172,7 @@ export default {
     }
   },
   async mounted() {
-    const token = localStorage.getItem("jwt")
-    if (token) {
-
-      const verificationResponse = await requests.verifyToken(token)
-      const username = verificationResponse;
-      this.token = token
-
-      if (username) {
-        this.isLoggedIn = true
-        this.username = username
-        await this.updatePinsAndPolygons()
-      }
-
-    }
+    await this.updatePinsAndPolygons()
   }
 }
 </script>

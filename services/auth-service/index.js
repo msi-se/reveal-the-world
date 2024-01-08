@@ -26,7 +26,7 @@ if (!process.env.fusionAuthURL) {
   process.exit();
 }
 if (!process.env.internalFusionAuthURL) {
-  console.error('Missing clientSecret from .env');
+  console.error('Missing internalFusionAuthURL from .env');
   process.exit();
 }
 const clientId = process.env.clientId;

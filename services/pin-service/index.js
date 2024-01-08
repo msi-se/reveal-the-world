@@ -1,5 +1,7 @@
 import express from "express";
 import { MongoClient } from "mongodb";
+import cookieParser from 'cookie-parser';
+import auth from "./auth-middleware.js";
 
 // use .env file in parent directory (only needed for local development)
 import dotenv from "dotenv";
@@ -65,6 +67,8 @@ const pinWithPolygonView = database.collection("pinWithPolygonView");
 const app = express();
 const port = 3002;
 app.use(express.json());
+app.use(cookieParser());
+app.use(auth);
 
 // define routes
 app.get("/", (req, res) => {
@@ -72,35 +76,18 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", async (req, res) => {
-
-    // verify token by using the user service
-    const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": req.headers.authorization || "",
-        },
-    });
-    if (!verifyResponse.ok) {
-        res.status(400).send("Invalid token");
-        return;
-    }
-
     let pin = req.body;
 
-    // fetch the polygon outline from nominatim
-    const { polygon, polygonname } = await fetch(`${BACKEND_URL}/api/pin/region`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: req.headers.authorization || "",
-        },
-        body: JSON.stringify({ lat: pin.latitude, lng: pin.longitude }),
-    }).then(res => res.json());
-
+    const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
     if (!polygon) {
         res.status(400).send("Could not find polygon");
         return;
+    }
+
+    // save the polygon outline to the database to not have to fetch it again if it is not already there
+    const existingPolygon = await polygonCollection.findOne({ polygonname });
+    if (!existingPolygon) {
+        await polygonCollection.insertOne({ polygonname, polygon });
     }
     pin.polygonname = polygonname;
     await pinCollection.insertOne(pin);
@@ -112,19 +99,6 @@ app.post("/", async (req, res) => {
 });
 
 app.get("/:username", async (req, res) => {
-
-    // verify token by using the user service
-    const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": req.headers.authorization || "",
-        },
-    });
-    if (!verifyResponse.ok) {
-        res.status(400).send("Invalid token");
-        return;
-    }
     const pins = await pinWithPolygonView.find({ username: req.params.username }).toArray();
     res.send(pins);
 });
@@ -134,19 +108,6 @@ app.post("/region", async (req, res) => {
     // takes in a lat and lng and returns a polygon that is the region around that point
     // it also stores the polygon in the database so that it does not have to be fetched again
     // it replaces the getPolygonAndName function (but uses it)
-
-    // verify token by using the user service
-    const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": req.headers.authorization || "",
-        },
-    });
-    if (!verifyResponse.ok) {
-        res.status(400).send("Invalid token");
-        return;
-    }
 
     const { lat, lng } = req.body;
     
