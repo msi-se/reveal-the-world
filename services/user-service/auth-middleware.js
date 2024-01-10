@@ -47,7 +47,7 @@ const auth = async (req, res, next) => {
     res.user = {
         username: user.preferred_username,
         id: user.sub,
-        tenant: user.applicationId
+        tenant: user.tid
     };
     next();
 }
