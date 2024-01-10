@@ -1,16 +1,5 @@
 <template>
   <main>
-    <input
-      v-if="!isLoggedIn"
-      type="text"
-      placeholder="Login"
-      v-model="login"
-      @keyup.enter="loginUser"
-    />
-    <div v-if="isLoggedIn">
-      <div>Logged in as {{ login }}</div>
-      <button @click="logoutUser">Logout</button>
-    </div>
     <DataInputDialog v-if="clickedOnMap" @save="saveData" @cancel="cancelData" />
     <div style="height: 90vh; width: 90vw">
       <l-map
@@ -59,6 +48,8 @@ import DataInputDialog from "../components/DataInputDialog.vue"
 import { getOutlineForLatLng, getRandomPastelColor } from "../js/helpers.js"
 import { getPolygonAndName } from "../js/helpers-new.js"
 import * as requests from "../js/requests.js"
+import { getUser, login, logout } from '../js/user';
+
 
 export default {
   components: {
@@ -69,7 +60,7 @@ export default {
   },
   data() {
     return {
-      /** @type {Array<{key: number, latlngs: number[][], color: string}>} */
+      /** @type {Array<{key: number, latlngs: number[][], color: string, polygonname: string}>} */
       polygons: [],
       /** @type {Array<{key: number, latlng: number[]}>} */
       markers: [],
@@ -77,17 +68,22 @@ export default {
         maxZoom: 18,
         minZoom: 1
       },
-      isLoggedIn: false,
-      login: "",
       clickedOnMap: false,
       selectedCoords: { lat: 0, lng: 0 }
     }
   },
-  computed: {},
+  computed: {
+    isLoggedIn() {
+      return getUser() !== null;
+    },
+    username() {
+      return getUser().username;
+    }
+  },
   methods: {
     /**
      * Triggered when the user clicks on the map
-     * @param {L.LeafletMouseEvent} event
+     * @param event
      */
     async onClickOnMap(event) {
       const { lat, lng } = event.latlng || {}
@@ -97,29 +93,6 @@ export default {
 
       this.clickedOnMap = true
       this.selectedCoords = { lat, lng }
-    },
-    /**
-     * Triggered when the user clicks on the login input
-     */
-    async loginUser() {
-      if (this.login.length > 0) {
-        requests.createUser({ name: this.login, age: 0, homeLocation: "" })
-        this.isLoggedIn = true
-        localStorage.setItem("login", this.login)
-
-        this.markers = []
-        this.polygons = []
-
-        await this.updatePinsAndPolygons()
-      }
-    },
-    /**
-     * Triggered when the user clicks on the logout button
-     */
-    logoutUser() {
-      this.isLoggedIn = false
-      this.login = ""
-      localStorage.removeItem("login")
     },
     /**
      * Saves the data from the DataInputDialog
@@ -136,7 +109,7 @@ export default {
 
       const { lat, lng } = this.selectedCoords
       const saveResponse = await requests.createPin({
-        username: this.login,
+        username: this.username,
         name: data.name,
         description: data.description,
         date: data.date,
@@ -145,7 +118,7 @@ export default {
         budget: data.budget,
         latitude: lat,
         longitude: lng
-      })
+      }, this.token)
 
       // add the marker
       this.markers.push({
@@ -159,22 +132,23 @@ export default {
       this.polygons.push({
         key: this.polygons.length + 1,
         latlngs: polygonLatlngs,
-        color: getRandomPastelColor()
+        color: getRandomPastelColor(),
+        polygonname: saveResponse.polygonname
       })
-      this.clickedOnMap = false
+      this.clickedOnMap = false;
     },
     /**
      * Cancels the DataInputDialog
      */
     cancelData() {
-      this.clickedOnMap = false
+      this.clickedOnMap = false;
     },
     async updatePinsAndPolygons() {
       this.markers = []
       this.polygons = []
 
       // fetch the pins for the logged in user and add them to the map
-      const pins = await requests.getPinsOfUser(this.login)
+      const pins = await requests.getPinsOfUser(this.username)
       pins.forEach((pin) => {
         this.markers.push({
           key: this.markers.length + 1,
@@ -182,28 +156,23 @@ export default {
         })
       })
 
-      // fetch the outline for the pins
-      pins.forEach(async (pin) => {
+      console.log("pins", pins)
+
+      // create the polygons for the pins
+      for (let i = 0; i < pins.length; i++) {
+        const pin = pins[i];
         const polygonLatlngs = pin.polygon
         this.polygons.push({
           key: this.polygons.length + 1,
           latlngs: polygonLatlngs,
-          color: getRandomPastelColor()
+          color: getRandomPastelColor(),
+          polygonname: pin.polygonname
         })
-      })
+      }
     }
   },
   async mounted() {
-    const login = localStorage.getItem("login")
-    console.log("login", login)
-    if (login) {
-      const user = await requests.getUser(login)
-      console.log("user", user)
-      this.login = login
-      this.isLoggedIn = true
-
-      await this.updatePinsAndPolygons()
-    }
+    await this.updatePinsAndPolygons()
   }
 }
 </script>

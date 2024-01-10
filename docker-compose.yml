@@ -1,0 +1,74 @@
+version: "3"
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+  proxy:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./services/default.conf.template:/etc/nginx/templates/default.conf.template
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      - clientId=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
+      - clientSecret=super-secret-secret-that-should-be-regenerated-for-production
+      - fusionAuthURL=http://localhost:9011
+      - internalFusionAuthURL=http://host.docker.internal:9011
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+      - internalFusionAuthURL=http://host.docker.internal:9011
+  pin-service:
+    build: ./services/pin-service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+      - internalFusionAuthURL=http://host.docker.internal:9011
+  heatmap-service:
+    build: ./services/heatmap-service
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+      - internalFusionAuthURL=http://host.docker.internal:9011
+  analytics-service:
+    build: ./services/analytics-service
+    ports:
+      - "3004:3004"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+  update-service:
+    build: ./services/update-service
+    ports:
+      - "3005:3005"
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017
+      - BACKEND_URL=http://host.docker.internal
+  
