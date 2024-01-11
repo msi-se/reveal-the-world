@@ -1,14 +1,17 @@
+import { TENANT } from "./tenant";
+
 const backendUrl = 'http://localhost/api';
 
 /**
  * @param {string} username
  */
-export async function getPinsOfUser(username) {
+export async function getPins() {
     try {
-        const response = await fetch(`${backendUrl}/pin/${username}`, {
+        const response = await fetch(`${backendUrl}/pin/`, {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
+                "tenant": TENANT
             }
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
@@ -45,6 +48,7 @@ export async function createPin(pin) {
             body: JSON.stringify(pin),
             headers: {
                 "Content-Type": "application/json",
+                "tenant": TENANT
             }
         });
     
