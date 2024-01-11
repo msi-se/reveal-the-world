@@ -17,12 +17,12 @@ const port = 8080; // default port to listen
 //   console.error('Missing clientId from .env');
 //   process.exit();
 // }
-if (!process.env.clientSecret) {
-  console.error('Missing clientSecret from .env');
-  process.exit();
-}
+// if (!process.env.clientSecret) {
+//   console.error('Missing clientSecret from .env');
+//   process.exit();
+// }
 if (!process.env.fusionAuthURL) {
-  console.error('Missing clientSecret from .env');
+  console.error('Missing fusionAuthURL from .env');
   process.exit();
 }
 if (!process.env.internalFusionAuthURL) {
@@ -30,7 +30,7 @@ if (!process.env.internalFusionAuthURL) {
   process.exit();
 }
 // const clientId = process.env.clientId;
-const clientSecret = process.env.clientSecret;
+// const clientSecret = process.env.clientSecret;
 const fusionAuthURL = process.env.fusionAuthURL;
 const internalFusionAuthURL = process.env.internalFusionAuthURL;
 
@@ -108,6 +108,13 @@ app.get('/oauth-redirect', async (req, res, next) => {
   if (stateFromFusionAuth !== userSessionCookie?.stateValue) {
     console.log("State doesn't match. uh-oh.");
     console.log("Saw: " + stateFromFusionAuth + ", but expected: " + userSessionCookie?.stateValue);
+    res.redirect(302, tenantToPath(tenant));
+    return;
+  }
+
+  const clientSecret = process.env[`${tenant}ClientSecret`];
+  if (!clientSecret) {
+    console.error(`Missing ${tenant}ClientSecret from .env`);
     res.redirect(302, tenantToPath(tenant));
     return;
   }

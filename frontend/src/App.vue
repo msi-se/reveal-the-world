@@ -1,10 +1,10 @@
 <template>
-  <h1>Reveal the World</h1>
+  <h1>Reveal the World - {{ TENANT }}</h1>
   <header>
     <div class="wrapper">
       <nav>
-        <a href="/pin">My Travel Pins</a>
-        <a href="/heatmap">Heatmap</a>
+        <a :href="`${PATH}/pin`">My Travel Pins</a>
+        <a :href="`${PATH}/heatmap`">Heatmap</a>
       </nav>
     </div>
   </header>
@@ -14,6 +14,7 @@
 
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import { TENANT, PATH } from './js/tenant';
 
 console.log(document.cookie);
 </script>

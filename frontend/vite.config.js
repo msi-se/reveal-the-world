@@ -4,19 +4,18 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+const TENANT = process.env.VITE_TENANT;
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
   ],
+  base: TENANT === 'default' ? '/' : `/${TENANT}/`,
   build: {
     commonjsOptions: {
       transformMixedEsModules: true
     }
-  },
-  define: {
-    VITE_TENANT: process.env.VITE_BACKEND_URL,
-    VITE_TENANT_CLIENT_ID: process.env.VITE_BACKEND_URL,
   },
   resolve: {
     alias: {
