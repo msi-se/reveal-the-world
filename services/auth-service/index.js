@@ -112,9 +112,9 @@ app.get('/oauth-redirect', async (req, res, next) => {
     return;
   }
 
-  const clientSecret = process.env[`${tenant}ClientSecret`];
+  const clientSecret = process.env[`${tenant}_clientSecret`];
   if (!clientSecret) {
-    console.error(`Missing ${tenant}ClientSecret from .env`);
+    console.error(`Missing ${tenant}_clientSecret from .env`);
     res.redirect(302, tenantToPath(tenant));
     return;
   }
