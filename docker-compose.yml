@@ -23,6 +23,14 @@ services:
       - clientSecret=super-secret-secret-that-should-be-regenerated-for-production
       - fusionAuthURL=http://localhost:9011
       - internalFusionAuthURL=http://host.docker.internal:9011
+  frontend-default:
+    build:
+      context: ./frontend
+      args:
+        - VITE_TENANT=default
+        - VITE_TENANT_CLIENT_ID=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
+    ports:
+      - "5173:3000"
   user-service:
     build: ./services/user-service
     ports:
