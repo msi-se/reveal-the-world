@@ -73,7 +73,7 @@ app.use(auth);
 
 app.post("/", async (req, res) => {
     let pin = req.body;
-    pin.username = res.user.username;
+    pin.username = req.user.username;
 
     const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
     if (!polygon) {
@@ -96,7 +96,7 @@ app.post("/", async (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-    const user = res.user;
+    const user = req.user;
     const pins = await pinWithPolygonView.find({ username: user.username }).toArray();
     res.send(pins);
 });

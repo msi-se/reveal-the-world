@@ -53,7 +53,7 @@ const auth = async (req, res, next) => {
         }))
         return;
     }
-    res.user = {
+    req.user = {
         username: user.preferred_username,
         id: user.sub,
         tenant: tenant,
