@@ -70,7 +70,8 @@ export async function getHeatmapData() {
         const response = await fetch(`${backendUrl}/heatmap`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                "tenant": TENANT
             }
         });
     
