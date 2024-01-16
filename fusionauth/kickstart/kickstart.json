@@ -26,7 +26,7 @@
       "body": {
         "key": {
           "algorithm": "RS256",
-          "name": "For exampleapp",
+          "name": "For RTW",
           "length": 2048
         }
       }
@@ -37,12 +37,12 @@
       "tenantId": "#{defaultTenantId}",
       "body": {
         "application": {
-          "name": "Reveal The World",
+          "name": "RTW - Default",
           "oauthConfiguration": {
             "authorizedRedirectURLs": [
               "http://localhost/auth/oauth-redirect"
             ],
-            "logoutURL": "http://localhost/auth/oauth2/logout",
+            "logoutURL": "http://localhost/auth/oauth2/logout?tenant=default",
             "clientSecret": "#{clientSecret}",
             "enabledGrants": [
               "authorization_code",

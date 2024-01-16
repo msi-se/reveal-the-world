@@ -70,13 +70,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(auth);
 
-// define routes
-app.get("/", (req, res) => {
-    res.status(200).send("Pin service is running");
-});
 
 app.post("/", async (req, res) => {
     let pin = req.body;
+    pin.username = res.user.username;
 
     const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
     if (!polygon) {
@@ -98,8 +95,9 @@ app.post("/", async (req, res) => {
     res.send(pin);
 });
 
-app.get("/:username", async (req, res) => {
-    const pins = await pinWithPolygonView.find({ username: req.params.username }).toArray();
+app.get("/", async (req, res) => {
+    const user = res.user;
+    const pins = await pinWithPolygonView.find({ username: user.username }).toArray();
     res.send(pins);
 });
 

@@ -109,7 +109,6 @@ export default {
 
       const { lat, lng } = this.selectedCoords
       const saveResponse = await requests.createPin({
-        username: this.username,
         name: data.name,
         description: data.description,
         date: data.date,
@@ -148,7 +147,7 @@ export default {
       this.polygons = []
 
       // fetch the pins for the logged in user and add them to the map
-      const pins = await requests.getPinsOfUser(this.username)
+      const pins = await requests.getPins()
       pins.forEach((pin) => {
         this.markers.push({
           key: this.markers.length + 1,
