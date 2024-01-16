@@ -1,5 +1,7 @@
 import express from "express";
 import { MongoClient } from "mongodb";
+import cookieParser from 'cookie-parser';
+import auth from "./auth-middleware.js";
 
 // use .env file in parent directory (only needed for local development)
 import dotenv from "dotenv";
@@ -59,22 +61,11 @@ const heatRegionStateWithPolygonView = database.collection("heatRegionStateWithP
 const app = express();
 const port = 3003;
 app.use(express.json());
+app.use(cookieParser());
+app.use(auth);
 
 // define routes
 app.get("/", async (req, res) => {
-
-    // verify token by using the user service
-    // const verifyResponse = await fetch(`${BACKEND_URL}/api/user/verify`, {
-    //     method: "POST",
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         "Authorization": req.headers.authorization || "",
-    //     },
-    // });
-    // if (!verifyResponse.ok) {
-    //     res.status(400).send("Invalid token");
-    //     return;
-    // }
 
     // get the current heat region state
     const heatRegionState = await heatRegionStateCollection.find({}).sort({ timestamp: -1 }).limit(1).next();
