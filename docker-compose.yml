@@ -40,16 +40,6 @@ services:
         - VITE_TENANT_CLIENT_ID=74b35a42-b914-4b7e-abb5-c5184a3ca334
     ports:
       - "5174:3000"
-  user-service:
-    build: ./services/user-service
-    ports:
-      - "3001:3001"
-    depends_on:
-      - mongo
-    environment:
-      - MONGODB_URI=mongodb://mongo:27017
-      - BACKEND_URL=http://host.docker.internal
-      - internalFusionAuthURL=http://host.docker.internal:9011
   pin-service:
     build: ./services/pin-service
     ports:
