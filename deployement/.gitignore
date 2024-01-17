@@ -1,6 +1,5 @@
 .terraform*
-terraform.tfstate
+terraform.tfstate*
 *.tfplan
-azurek8s.yaml
-cosmos.txt
+outputs
 aks-test-app

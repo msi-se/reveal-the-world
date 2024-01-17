@@ -7,9 +7,9 @@ RUN
 - echo "$(terraform output connection_string)" > ./cosmos.txt
 - export KUBECONFIG=./azurek8s.yaml
 - kubectl get nodes
-
 - deploy images to azure container registry
-- use kubectl or helm to deploy the app  
+- kubectl create secret generic cosmos --from-file=MONGODB_URI=./cosmos.txt
+- kubectl apply file.yaml
 
 ====================================  
 Send image to container registry (sudo)

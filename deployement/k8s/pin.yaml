@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pin-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pin-service
+  template:
+    metadata:
+      labels:
+        app: pin-service
+    spec:
+      containers:
+      - name: pin-service
+        image: rtwcr1.azurecr.io/services/pin-service
+        ports:
+        - containerPort: 3002
+        env:
+          - name: fusionAuthURL
+              valueFrom:
+                secretKeyRef:
+                  name: fusionAuthURL
+                  key: fusionAuthURL
+          - name: internalFusionAuthURL
+                valueFrom:
+                  secretKeyRef:
+                    name: internalFusionAuthURL
+                    key: internalFusionAuthURL
+          - name: MONGODB_URI
+                valueFrom:
+                  secretKeyRef:
+                    name: MONGODB_URI
+                    key: MONGODB_URI
+          - name: BACKEND_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: BACKEND_URL
+                    key: BACKEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pin-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3002
+    targetPort: 3002
+  selector:
+    app: pin-service

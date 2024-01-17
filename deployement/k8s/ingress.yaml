@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rtw-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 5173
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 8080
+      - path: /api/pin
+        pathType: Prefix
+        backend:
+          service:
+            name: pin-service
+            port:
+              number: 3002
+      - path: /api/heatmap
+        pathType: Prefix
+        backend:
+          service:
+            name: heatmap-service
+            port:
+              number: 3003
+      - path: /api/analytics
+        pathType: Prefix
+        backend:
+          service:
+            name: analytics-service
+            port:
+              number: 3004
+      - path: /api/update
+        pathType: Prefix
+        backend:
+          service:
+            name: update-service
+            port:
+              number: 3005
+      

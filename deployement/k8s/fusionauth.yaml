@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fusionauth
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: fusionauth
+  template:
+    metadata:
+      labels:
+        app: fusionauth
+    spec:
+      containers:
+        - name: fusionauth
+          image: fusionauth/fusionauth-app:1.32.1
+          ports: 
+          - containerPort: 9011
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postges-credentials
+                  key: DATABASE_URL
+            - name: DATABASE_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postges-credentials
+                  key: DATABASE_ROOT_PASSWORD
+            - name: DATABASE_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postges-credentials
+                  key: DATABASE_ROOT_USERNAME
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postges-credentials
+                  key: DATABASE_PASSWORD
+            - name: DATABASE_USERNAME 
+              valueFrom:
+                secretKeyRef:
+                  name: postges-credentials
+                  key: DATABASE_USERNAME
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postges-credentials
+                  key: POSTGRES_DB
+            - name: FUSIONAUTH_APP_RUNTIME_MODE
+              value: development
+            - name: FUSIONAUTH_APP_MEMORY
+              value: 512M
+            - name: FUSIONAUTH_APP_URL
+              value: http://fusionauth:9011
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fusionauth
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 9011
+    targetPort: 9011
+  selector:
+    app: fusionauth

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: update-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: update-service
+  template:
+    metadata:
+      labels:
+        app: update-service
+    spec:
+      containers:
+      - name: update-service
+        image: rtwcr1.azurecr.io/services/update-service
+        ports:
+        - containerPort: 3005
+        env:
+          - name: fusionAuthURL
+              valueFrom:
+                secretKeyRef:
+                  name: fusionAuthURL
+                  key: fusionAuthURL
+          - name: internalFusionAuthURL
+                valueFrom:
+                  secretKeyRef:
+                    name: internalFusionAuthURL
+                    key: internalFusionAuthURL
+          - name: MONGODB_URI
+                valueFrom:
+                  secretKeyRef:
+                    name: MONGODB_URI
+                    key: MONGODB_URI
+          - name: BACKEND_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: BACKEND_URL
+                    key: BACKEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: update-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3005
+    targetPort: 3005
+  selector:
+    app: update-service

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heatmap-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heatmap-service
+  template:
+    metadata:
+      labels:
+        app: heatmap-service
+    spec:
+      containers:
+      - name: heatmap-service
+        image: rtwcr1.azurecr.io/services/heatmap-service
+        ports:
+        - containerPort: 3003
+        env:
+          - name: fusionAuthURL
+              valueFrom:
+                secretKeyRef:
+                  name: fusionAuthURL
+                  key: fusionAuthURL
+          - name: internalFusionAuthURL
+                valueFrom:
+                  secretKeyRef:
+                    name: internalFusionAuthURL
+                    key: internalFusionAuthURL
+          - name: MONGODB_URI
+                valueFrom:
+                  secretKeyRef:
+                    name: MONGODB_URI
+                    key: MONGODB_URI
+          - name: BACKEND_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: BACKEND_URL
+                    key: BACKEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: heatmap-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3003
+    targetPort: 3003
+  selector:
+    app: heatmap-service
