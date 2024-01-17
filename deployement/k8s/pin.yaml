@@ -19,25 +19,25 @@ spec:
         - containerPort: 3002
         env:
           - name: fusionAuthURL
-              valueFrom:
-                secretKeyRef:
-                  name: fusionAuthURL
-                  key: fusionAuthURL
+            valueFrom:
+              secretKeyRef:
+                name: fusionAuthURL
+                key: fusionAuthURL
           - name: internalFusionAuthURL
-                valueFrom:
-                  secretKeyRef:
-                    name: internalFusionAuthURL
-                    key: internalFusionAuthURL
+            valueFrom:
+              secretKeyRef:
+                name: internalFusionAuthURL
+                key: internalFusionAuthURL
           - name: MONGODB_URI
-                valueFrom:
-                  secretKeyRef:
-                    name: MONGODB_URI
-                    key: MONGODB_URI
+            valueFrom:
+              secretKeyRef:
+                name: MONGODB_URI
+                key: MONGODB_URI
           - name: BACKEND_URL
-                valueFrom:
-                  secretKeyRef:
-                    name: BACKEND_URL
-                    key: BACKEND_URL
+            valueFrom:
+              secretKeyRef:
+                name: BACKEND_URL
+                key: BACKEND_URL
 ---
 apiVersion: v1
 kind: Service
