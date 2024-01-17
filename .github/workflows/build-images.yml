@@ -50,13 +50,6 @@ jobs:
           username: ${{ env.REGISTRY_USERNAME }}
           password: ${{ env.REGISTRY_PASSWORD }}
         
-      # - name: Extract metadata (tags, labels) for Docker (${{ matrix.service }})
-      #   if: steps.changes.outputs.service == 'true'
-      #   id: meta
-      #   uses: docker/metadata-action@v5
-      #   with:
-      #     images: ${{ env.REGISTRY }}/${{ matrix.service }}
-
       - name: Build and push Docker image (${{ matrix.service }})
         if: steps.changes.outputs.service == 'true'
         uses: docker/build-push-action@v5
