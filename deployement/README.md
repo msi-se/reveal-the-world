@@ -16,7 +16,7 @@ FOR DEPLOYING AKS
 - terraform apply main.tfplan
 - echo "$(terraform output kube_config)" > ./outputs/azurek8s.yaml
 - remove EOT in ./outputs/azurek8s.yaml
-- export KUBECONFIG=./azurek8s.yaml
+- export ../aks-deployment/outputs/azurek8s.yaml
 - kubectl get nodes
 - kubectl create secret generic cosmos --from-file=MONGODB_URI=./cosmos.txt
 - kubectl apply file.yaml
