@@ -19,9 +19,8 @@ services:
     depends_on:
       - mongo
     environment:
-      - clientId=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
       - default_clientSecret=super-secret-secret-that-should-be-regenerated-for-production
-      - adac_clientSecret=vF7fFFL7OXDbJADWc9_vz0xLcqdlBFrvNuN4V9vfdXs
+      - adac_clientSecret=77871c4bf3e249b3ad9cdcd880ff37c1
       - fusionAuthURL=http://localhost:9011
       - internalFusionAuthURL=http://host.docker.internal:9011
     extra_hosts:
@@ -42,7 +41,7 @@ services:
       - "5174:3000"
     environment:
       - VITE_TENANT=adac
-      - VITE_TENANT_CLIENT_ID=74b35a42-b914-4b7e-abb5-c5184a3ca334
+      - VITE_TENANT_CLIENT_ID=b2cd30ad-bcb9-472b-91d6-effae14db013
       - VITE_BACKEND_URL=http://localhost/api
   pin-service:
     build: ./services/pin-service

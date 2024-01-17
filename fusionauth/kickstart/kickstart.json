@@ -21,23 +21,11 @@
   "requests": [
     {
       "method": "POST",
-      "url": "/api/key/generate/#{asymmetricKeyId}",
-      "tenantId": "#{defaultTenantId}",
-      "body": {
-        "key": {
-          "algorithm": "RS256",
-          "name": "For RTW",
-          "length": 2048
-        }
-      }
-    },
-    {
-      "method": "POST",
       "url": "/api/application/#{applicationId}",
       "tenantId": "#{defaultTenantId}",
       "body": {
         "application": {
-          "name": "RTW - Default",
+          "name": "default-app",
           "oauthConfiguration": {
             "authorizedRedirectURLs": [
               "http://localhost/auth/oauth-redirect"
@@ -52,9 +40,7 @@
             "requireRegistration": true
           },
           "jwtConfiguration": {
-            "enabled": true,
-            "accessTokenKeyId": "#{asymmetricKeyId}",
-            "idTokenKeyId": "#{asymmetricKeyId}"
+            "enabled": true
           },
           "registrationConfiguration": {
             "enabled": true,

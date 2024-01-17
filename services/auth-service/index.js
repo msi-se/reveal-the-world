@@ -13,14 +13,6 @@ dotenv.config();
 const app = express();
 const port = 8080; // default port to listen
 
-// if (!process.env.clientId) {
-//   console.error('Missing clientId from .env');
-//   process.exit();
-// }
-// if (!process.env.clientSecret) {
-//   console.error('Missing clientSecret from .env');
-//   process.exit();
-// }
 if (!process.env.fusionAuthURL) {
   console.error('Missing fusionAuthURL from .env');
   process.exit();
@@ -29,8 +21,6 @@ if (!process.env.internalFusionAuthURL) {
   console.error('Missing internalFusionAuthURL from .env');
   process.exit();
 }
-// const clientId = process.env.clientId;
-// const clientSecret = process.env.clientSecret;
 const fusionAuthURL = process.env.fusionAuthURL;
 const internalFusionAuthURL = process.env.internalFusionAuthURL;
 
