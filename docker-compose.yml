@@ -27,19 +27,19 @@ services:
   frontend-default:
     build:
       context: ./frontend
-      args:
-        - VITE_TENANT=default
-        - VITE_TENANT_CLIENT_ID=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
     ports:
       - "5173:3000"
+    environment:
+      - VITE_TENANT=default
+      - VITE_TENANT_CLIENT_ID=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
   frontend-adac:
     build:
       context: ./frontend
-      args:
-        - VITE_TENANT=adac
-        - VITE_TENANT_CLIENT_ID=74b35a42-b914-4b7e-abb5-c5184a3ca334
     ports:
       - "5174:3000"
+    environment:
+      - VITE_TENANT=adac
+      - VITE_TENANT_CLIENT_ID=74b35a42-b914-4b7e-abb5-c5184a3ca334
   pin-service:
     build: ./services/pin-service
     ports:
