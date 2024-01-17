@@ -24,6 +24,8 @@ services:
       - adac_clientSecret=vF7fFFL7OXDbJADWc9_vz0xLcqdlBFrvNuN4V9vfdXs
       - fusionAuthURL=http://localhost:9011
       - internalFusionAuthURL=http://host.docker.internal:9011
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   frontend-default:
     build:
       context: ./frontend
@@ -50,8 +52,9 @@ services:
       - mongo
     environment:
       - MONGODB_URI=mongodb://mongo:27017
-      - BACKEND_URL=http://host.docker.internal
       - internalFusionAuthURL=http://host.docker.internal:9011
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   heatmap-service:
     build: ./services/heatmap-service
     ports:
@@ -60,8 +63,9 @@ services:
       - mongo
     environment:
       - MONGODB_URI=mongodb://mongo:27017
-      - BACKEND_URL=http://host.docker.internal
       - internalFusionAuthURL=http://host.docker.internal:9011
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   analytics-service:
     build: ./services/analytics-service
     ports:
@@ -70,8 +74,9 @@ services:
       - mongo
     environment:
       - MONGODB_URI=mongodb://mongo:27017
-      - BACKEND_URL=http://host.docker.internal
       - internalFusionAuthURL=http://host.docker.internal:9011
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   update-service:
     build: ./services/update-service
     ports:
@@ -80,6 +85,7 @@ services:
       - mongo
     environment:
       - MONGODB_URI=mongodb://mongo:27017
-      - BACKEND_URL=http://host.docker.internal
       - internalFusionAuthURL=http://host.docker.internal:9011
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   
