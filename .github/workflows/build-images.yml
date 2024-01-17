@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: rtwcr1.azurecr.io
-  REGISTRY_USERNAME: rtwcr1
+  REGISTRY_USERNAME: GitHub-Action
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
 
 jobs:
