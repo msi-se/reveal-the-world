@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const TENANT = import.meta.env.VITE_TENANT;
 const TENANT_CLIENT_ID = import.meta.env.VITE_TENANT_CLIENT_ID;
 const PATH = TENANT === 'default' ? '' : `/${TENANT}`;
@@ -10,5 +11,6 @@ console.log(TENANT);
 export {
     PATH,
     TENANT,
-    TENANT_CLIENT_ID
+    TENANT_CLIENT_ID,
+    BACKEND_URL,
 };

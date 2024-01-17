@@ -1,4 +1,4 @@
-import { TENANT, TENANT_CLIENT_ID } from "./tenant";
+import { TENANT, TENANT_CLIENT_ID } from "./config";
 
 var user = null;
 

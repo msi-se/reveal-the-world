@@ -1,13 +1,11 @@
-import { TENANT } from "./tenant";
-
-const backendUrl = 'http://localhost/api';
+import { TENANT, BACKEND_URL } from "./config";
 
 /**
  * @param {string} username
  */
 export async function getPins() {
     try {
-        const response = await fetch(`${backendUrl}/pin/`, {
+        const response = await fetch(`${BACKEND_URL}/pin/`, {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -43,7 +41,7 @@ export async function getPins() {
 export async function createPin(pin) {
     try {
         console.log(JSON.stringify(pin));
-        const response = await fetch(`${backendUrl}/pin/`, {
+        const response = await fetch(`${BACKEND_URL}/pin/`, {
             method: "POST",
             body: JSON.stringify(pin),
             headers: {
@@ -67,7 +65,7 @@ export async function createPin(pin) {
  */
 export async function getHeatmapData() {
     try {
-        const response = await fetch(`${backendUrl}/heatmap`, {
+        const response = await fetch(`${BACKEND_URL}/heatmap`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

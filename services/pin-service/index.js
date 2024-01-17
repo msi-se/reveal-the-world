@@ -9,7 +9,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), "../.env") });
 const MONDODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost";
 
 // connect to MongoDB
 const client = new MongoClient(MONDODB_URI);
