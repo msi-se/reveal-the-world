@@ -34,6 +34,8 @@ services:
       FUSIONAUTH_APP_URL: http://fusionauth:9011
       SEARCH_TYPE: database
       FUSIONAUTH_APP_KICKSTART_FILE: ${FUSIONAUTH_APP_KICKSTART_FILE}
+    volumes:
+      - ./kickstart:/usr/local/fusionauth/kickstart
 
     networks:
       - db_net
