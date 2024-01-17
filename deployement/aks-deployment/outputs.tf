@@ -1,5 +1,5 @@
 output "resource_group_name" {
-  value = azurerm_resource_group.rg.name
+  value = azurerm_resource_group.rgaks.name
 }
 
 # K8S cluster
@@ -39,11 +39,5 @@ output "host" {
 
 output "kube_config" {
   value     = azurerm_kubernetes_cluster.k8s.kube_config_raw
-  sensitive = true
-}
-
-# Cosmos DB
-output "connection_string" {
-  value = azurerm_cosmosdb_account.cosmos.connection_strings[0]
   sensitive = true
 }

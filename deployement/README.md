@@ -1,13 +1,23 @@
-RUN 
+RUN  
+
+FOR DEPLOYING DATASTORE (once)
 - az login
 - terraform init
 - terraform plan -out main.tfplan
 - terraform apply main.tfplan
-- echo "$(terraform output kube_config)" > ./azurek8s.yaml
-- echo "$(terraform output connection_string)" > ./cosmos.txt
+- az acr show --name rtwcr1 --query "id" --output tsv                       # ACR id to link to AKS to change
+- echo "$(terraform output connection_string)" > ./outputs/cosmos.txt
+- deploy images to azure container registry from GitHub (change username and password)
+
+FOR DEPLOYING AKS
+- az login
+- terraform init
+- terraform plan -out main.tfplan
+- terraform apply main.tfplan
+- echo "$(terraform output kube_config)" > ./outputs/azurek8s.yaml
+- remove EOT in ./outputs/azurek8s.yaml
 - export KUBECONFIG=./azurek8s.yaml
 - kubectl get nodes
-- deploy images to azure container registry
 - kubectl create secret generic cosmos --from-file=MONGODB_URI=./cosmos.txt
 - kubectl apply file.yaml
 

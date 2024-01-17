@@ -1,5 +1,1 @@
 .terraform*
-terraform.tfstate*
-*.tfplan
-outputs
-aks-test-app

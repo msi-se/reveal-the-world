@@ -1,16 +1,17 @@
+# Global
 variable "resource_group_location" {
   type        = string
   default     = "westus3"
   description = "Location of the resource group."
 }
 
-variable "resource_group_name_prefix" {
+# K8S cluster
+variable "aks_resource_group_name_prefix" {
   type        = string
   default     = "rg-rtw"
-  description = "Prefix of the resource group name that's combined with a random ID so name is unique in your Azure subscription."
+  description = "Name of the AKS resource group"
 }
 
-# K8S cluster
 variable "node_count" {
   type        = number
   description = "The initial quantity of nodes for the node pool."
@@ -27,19 +28,5 @@ variable "username" {
   type        = string
   description = "The admin username for the new cluster."
   default     = "azureadmin"
-}
-
-
-# Cosmos DB
-variable "cosmos_prefix" {
-  type        = string
-  default     = "rtw-cosmos-db"
-  description = "Prefix of the resource name"
-}
-
-variable "cosmosdb_account_location" {
-  type        = string
-  default     = "westus3"
-  description = "Cosmos db account location"
 }
 
