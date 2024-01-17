@@ -1,10 +1,10 @@
 name: Create and publish Docker images
 on:
   push:
-    # branches:
-    #   - 'master'
-    tags:
-      - 'v*'
+    branches:
+      - 'master'
+    # tags:
+    #   - 'v*'
 
 env:
   REGISTRY: rtwcr1.azurecr.io
@@ -28,23 +28,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
+      - name: Filter changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            service:
+              - '${{ matrix.service }}/version.txt'
+      
+      - name: Set version environment variable
+        if: steps.changes.outputs.service == 'true'
+        run: |
+          VER=$(cat ${{ matrix.service }}/version.txt)
+          echo "VERSION=$VER" >> $GITHUB_ENV
+      
       - name: Log in to the Container registry
+        if: steps.changes.outputs.service == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ env.REGISTRY_USERNAME }}
           password: ${{ env.REGISTRY_PASSWORD }}
         
-      - name: Extract metadata (tags, labels) for Docker (${{ matrix.service }})
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ matrix.service }}
+      # - name: Extract metadata (tags, labels) for Docker (${{ matrix.service }})
+      #   if: steps.changes.outputs.service == 'true'
+      #   id: meta
+      #   uses: docker/metadata-action@v5
+      #   with:
+      #     images: ${{ env.REGISTRY }}/${{ matrix.service }}
 
       - name: Build and push Docker image (${{ matrix.service }})
+        if: steps.changes.outputs.service == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.service }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ matrix.service }}:latest
+            ${{ env.REGISTRY }}/${{ matrix.service }}:${{ env.VERSION }}
+          # tags: ${{ steps.meta.outputs.tags }}
+          # labels: ${{ steps.meta.outputs.labels }}
