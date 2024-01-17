@@ -4,7 +4,25 @@ const { FusionAuthClient } = require('@fusionauth/node-client');
 const appUrl = 'http://localhost';
 const client = new FusionAuthClient('33052c8a-c283-4e96-9d2a-eb1215c69f8f-not-for-prod', 'http://localhost:9011');
 
+async function deleteTenant(tenantName) {
+    try {
+        let response = await client.searchTenants({
+            "search": {
+                "name": tenantName,
+            }
+        });
+        let tenants = response.successResponse.tenants;
+        if (tenants.length > 0 && tenants[0].name === tenantName) {
+            let tenantId = tenants[0].id;
+            await client.deleteTenant(tenantId);
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 async function create(tenantName) {
+    await deleteTenant(tenantName);
     try {
         let tenantId = uuid.v4();
         await client.createTenant(tenantId, {

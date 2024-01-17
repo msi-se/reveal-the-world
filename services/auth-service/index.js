@@ -84,6 +84,12 @@ app.get('/oauth-redirect', async (req, res, next) => {
   const authCode = `${req.query?.code}`;
   
   const userSessionCookie = req.cookies[userSession];
+  if (!userSessionCookie) {
+    console.log('Missing userSession cookie');
+    res.redirect(302, '/');
+    return;
+  }
+
   res.clearCookie(userSession);
   if (!userSessionCookie.clientId || !userSessionCookie.tenant) {
     console.log('Missing clientId or tenant from cookie');
