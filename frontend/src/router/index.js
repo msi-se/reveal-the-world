@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getUser } from '../js/user';
-import { PATH } from '../js/tenant';
+import { PATH } from '../js/config';
 
 const routeGuard = (fallback) => {
   return () => {

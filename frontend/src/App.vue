@@ -14,7 +14,7 @@
 
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import { TENANT, PATH } from './js/tenant';
+import { TENANT, PATH } from './js/config';
 
 console.log(document.cookie);
 </script>
