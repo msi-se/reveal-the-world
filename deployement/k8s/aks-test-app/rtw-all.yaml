@@ -1,0 +1,209 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: auth-service
+        image: rtwcr1.azurecr.io/services/auth-service
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: auth-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pin-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pin-service
+  template:
+    metadata:
+      labels:
+        app: pin-service
+    spec:
+      containers:
+      - name: pin-service
+        image: rtwcr1.azurecr.io/services/pin-service
+        ports:
+        - containerPort: 3002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pin-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3002
+    targetPort: 3002
+  selector:
+    app: pin-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heatmap-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heatmap-service
+  template:
+    metadata:
+      labels:
+        app: heatmap-service
+    spec:
+      containers:
+      - name: heatmap-service
+        image: rtwcr1.azurecr.io/services/heatmap-service
+        ports:
+        - containerPort: 3003
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: heatmap-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3003
+    targetPort: 3003
+  selector:
+    app: heatmap-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+      - name: analytics-service
+        image: rtwcr1.azurecr.io/services/analytics-service
+        ports:
+        - containerPort: 3004
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3004
+    targetPort: 3004
+  selector:
+    app: analytics-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: update-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: update-service
+  template:
+    metadata:
+      labels:
+        app: update-service
+    spec:
+      containers:
+      - name: update-service
+        image: rtwcr1.azurecr.io/services/update-service
+        ports:
+        - containerPort: 3005
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: update-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3005
+    targetPort: 3005
+  selector:
+    app: update-service
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rtw-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 8080
+      - path: /api/pin
+        pathType: Prefix
+        backend:
+          service:
+            name: pin-service
+            port:
+              number: 3002
+      - path: /api/heatmap
+        pathType: Prefix
+        backend:
+          service:
+            name: heatmap-service
+            port:
+              number: 3003
+      - path: /api/analytics
+        pathType: Prefix
+        backend:
+          service:
+            name: analytics-service
+            port:
+              number: 3004
+      - path: /api/update
+        pathType: Prefix
+        backend:
+          service:
+            name: update-service
+            port:
+              number: 3005
+      

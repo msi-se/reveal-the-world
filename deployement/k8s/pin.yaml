@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pin-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pin-service
+  template:
+    metadata:
+      labels:
+        app: pin-service
+    spec:
+      containers:
+      - name: pin-service
+        image: rtwcr1.azurecr.io/services/pin-service
+        ports:
+        - containerPort: 3002
+        envFrom:
+          - secretRef:
+            name: all_credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pin-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3002
+    targetPort: 3002
+  selector:
+    app: pin-service

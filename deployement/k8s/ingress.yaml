@@ -1,0 +1,54 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rtw-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /auth(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 1337
+      - path: /api/pin(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: pin-service
+            port:
+              number: 3002
+      - path: /api/heatmap(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: heatmap-service
+            port:
+              number: 3003
+      - path: /api/analytics(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: analytics-service
+            port:
+              number: 3004
+      - path: /api/update(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: update-service
+            port:
+              number: 3005
+      - path: /()(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
