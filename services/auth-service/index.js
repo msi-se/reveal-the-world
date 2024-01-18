@@ -20,6 +20,11 @@ if (!process.env.internalFusionAuthURL) {
   console.error('Missing internalFusionAuthURL from .env');
   process.exit();
 }
+if (!process.env.appURL) {
+  console.error('Missing appURL from .env');
+  process.exit();
+}
+const appURL = process.env.appURL;
 const fusionAuthURL = process.env.fusionAuthURL;
 const internalFusionAuthURL = process.env.internalFusionAuthURL;
 
@@ -78,7 +83,7 @@ app.get('/login', async (req, res, next) => {
   const pkcePair = await pkceChallenge();
   res.cookie(userSession, { stateValue, verifier: pkcePair.code_verifier, challenge: pkcePair.code_challenge, tenant: tenant, clientId: clientId }, { httpOnly: true });
 
-  res.redirect(302, `${fusionAuthURL}/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=http://localhost/auth/oauth-redirect&state=${stateValue}&code_challenge=${pkcePair.code_challenge}&code_challenge_method=S256`)
+  res.redirect(302, `${fusionAuthURL}/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${appURL}/auth/oauth-redirect&state=${stateValue}&code_challenge=${pkcePair.code_challenge}&code_challenge_method=S256`)
 });
 
 app.get('/oauth-redirect', async (req, res, next) => {

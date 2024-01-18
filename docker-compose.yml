@@ -21,6 +21,7 @@ services:
     environment:
       - default_clientSecret=super-secret-secret-that-should-be-regenerated-for-production
       - adac_clientSecret=77871c4bf3e249b3ad9cdcd880ff37c1
+      - appURL=http://localhost
       - fusionAuthURL=http://localhost:9011
       - internalFusionAuthURL=http://host.docker.internal:9011
     extra_hosts:
