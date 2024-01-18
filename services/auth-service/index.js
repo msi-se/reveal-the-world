@@ -129,7 +129,7 @@ app.get('/oauth-redirect', async (req, res, next) => {
     let response = await client.exchangeOAuthCodeForAccessTokenUsingPKCE(authCode,
       clientId,
       clientSecret,
-      `http://localhost/auth/oauth-redirect`,
+      appURL + `/auth/oauth-redirect`,
       userSessionCookie.verifier);
     
     if (response.statusCode !== 200) {
