@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: auth-service
+        image: rtwcr1.azurecr.io/services/auth-service
+        ports:
+        - containerPort: 1337
+        envFrom:
+          - secretRef:
+            name: all_credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 1337
+    targetPort: 1337
+  selector:
+    app: auth-service

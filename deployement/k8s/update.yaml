@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: update-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: update-service
+  template:
+    metadata:
+      labels:
+        app: update-service
+    spec:
+      containers:
+      - name: update-service
+        image: rtwcr1.azurecr.io/services/update-service
+        ports:
+        - containerPort: 3005
+        envFrom:
+          - secretRef:
+            name: all_credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: update-service
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3005
+    targetPort: 3005
+  selector:
+    app: update-service
