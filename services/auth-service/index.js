@@ -10,7 +10,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const port = 8080; // default port to listen
+const port = 1337; // default port to listen
 
 if (!process.env.fusionAuthURL) {
   console.error('Missing fusionAuthURL from .env');

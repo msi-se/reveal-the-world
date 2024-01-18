@@ -26,8 +26,8 @@ server {
     
     location /auth/ {
 
-        # route /auth/ to localhost:8080/ (root)
-        proxy_pass http://host.docker.internal:8080/;
+        # route /auth/ to localhost:1337/ (root)
+        proxy_pass http://host.docker.internal:1337/;
 
         # rewrite /auth/ to / (root)
         rewrite ^/auth/(.*) /$1 break;
