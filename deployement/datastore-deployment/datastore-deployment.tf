@@ -61,24 +61,100 @@ resource "azurerm_cosmosdb_mongo_database" "reveal-the-world" {
   throughput          = 400
 }
 
+## Heatmap collections
+resource "azurerm_cosmosdb_mongo_collection" "pin" {
+  name                = "pin"
+  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmos.name
+  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
+  index {
+    keys   = ["_id"]
+    unique = true
+  }
+}
+resource "azurerm_cosmosdb_mongo_collection" "polygon" {
+  name                = "polygon"
+  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmos.name
+  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
+  index {
+    keys   = ["_id"]
+    unique = true
+  }
+}
+resource "azurerm_cosmosdb_mongo_collection" "heatRegionState" {
+  name                = "heatRegionState"
+  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmos.name
+  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
+  index {
+    keys   = ["_id"]
+    unique = true
+  }
+}
+resource "azurerm_cosmosdb_mongo_collection" "heatRegionStateWithPolygonView" {
+  name                = "heatRegionStateWithPolygonView"
+  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmos.name
+  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
+  index {
+    keys   = ["_id"]
+    unique = true
+  }
+}
+
+## Pin collections
+# pin and polygon
+resource "azurerm_cosmosdb_mongo_collection" "user" {
+  name                = "pin"
+  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmos.name
+  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
+  index {
+    keys   = ["_id"]
+    unique = true
+  }
+}
+
+resource "azurerm_cosmosdb_mongo_collection" "heatRegion" {
+  name                = "heatRegion"
+  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmos.name
+  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
+  index {
+    keys   = ["_id"]
+    unique = true
+  }
+}
+
+resource "azurerm_cosmosdb_mongo_collection" "pinWithPolygonView" {
+  name                = "pinWithPolygonView"
+  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmos.name
+  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
+  index {
+    keys   = ["_id"]
+    unique = true
+  }
+}
+
 # Posgresql
-resource "azurerm_postgresql_server" "postgresql" {
-  name                = "rtw-fusionauth-postgresql"
-  location            = azurerm_resource_group.rgdata.location
-  resource_group_name = azurerm_resource_group.rgdata.name
+resource "azurerm_postgresql_flexible_server" "posgresql" {
+  name                   = "rtw-fusionauth-psqlserver"
+  resource_group_name    = azurerm_resource_group.rgdata.name
+  location               = azurerm_resource_group.rgdata.location
+  version                = "14"
+  administrator_login    = "psqladmin"
+  administrator_password = "Password!"
 
-  administrator_login          = "psqladmin"
-  administrator_login_password = "Pa$$w0rd"
+  storage_mb = 32768
+  sku_name   = "B_Standard_B1ms"
+}
 
-  sku_name   = "GP_Gen5_4"
-  version    = "11"
-  storage_mb = 640000
+resource "azurerm_postgresql_flexible_server_firewall_rule" "allow-all-posgresql" {
+  name             = "AllowAll"
+  server_id        = azurerm_postgresql_flexible_server.posgresql.id
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "255.255.255.255"
 
-  backup_retention_days        = 7
-  geo_redundant_backup_enabled = true
-  auto_grow_enabled            = true
-
-  public_network_access_enabled    = false
-  ssl_enforcement_enabled          = false
-  ssl_minimal_tls_version_enforced = "TLSEnforcementDisabled"
 }

@@ -1,2 +1,2 @@
 .terraform*
-./k8s/credentials.yaml
+k8s/credentials.yaml

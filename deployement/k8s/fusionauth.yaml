@@ -14,57 +14,38 @@ spec:
     spec:
       containers:
         - name: fusionauth
-          image: fusionauth/fusionauth-app:1.32.1
+          image: fusionauth/fusionauth-app
           ports: 
           - containerPort: 9011
           env:
             - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: postges-credentials
-                  key: DATABASE_URL
+              value: jdbc:postgresql://rtw-fusionauth-psqlserver.postgres.database.azure.com:5432/fusionauth
             - name: DATABASE_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postges-credentials
-                  key: DATABASE_ROOT_PASSWORD
+              value: Password!
             - name: DATABASE_ROOT_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: postges-credentials
-                  key: DATABASE_ROOT_USERNAME
-            - name: DATABASE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postges-credentials
-                  key: DATABASE_PASSWORD
+              value: psqladmin
             - name: DATABASE_USERNAME 
-              valueFrom:
-                secretKeyRef:
-                  name: postges-credentials
-                  key: DATABASE_USERNAME
-            - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: postges-credentials
-                  key: POSTGRES_DB
+              value: fusionauth
+            - name: DATABASE_PASSWORD
+              value: hkaLBM3RVnyYeYeqE3WI1w2e4Avpy0Wd5O3s3
             - name: FUSIONAUTH_APP_RUNTIME_MODE
               value: development
             - name: FUSIONAUTH_APP_MEMORY
               value: 512M
             - name: FUSIONAUTH_APP_URL
               value: http://fusionauth:9011
-
+            - name: SEARCH_TYPE
+              value: database
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: fusionauth
 spec:
-  type: ClusterIP
-  ports:
-  - name: http
-    port: 9011
-    targetPort: 9011
+  type: LoadBalancer
   selector:
     app: fusionauth
+  ports:
+    - protocol: TCP
+      port: 9011
+      targetPort: 9011

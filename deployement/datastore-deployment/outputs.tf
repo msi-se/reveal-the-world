@@ -7,3 +7,8 @@ output "connection_string" {
   value = azurerm_cosmosdb_account.cosmos.connection_strings[0]
   sensitive = true
 }
+
+# Posgres
+output "posgresql_fqdn" {
+  value = azurerm_postgresql_flexible_server.posgresql.fqdn
+}

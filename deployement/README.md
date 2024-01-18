@@ -7,19 +7,37 @@ FOR DEPLOYING DATASTORE (once)
 - terraform apply main.tfplan
 - az acr show --name rtwcr1 --query "id" --output tsv                       # ACR id to link to AKS to change
 - echo "$(terraform output connection_string)" > ./outputs/cosmos.txt
+- echo "$(terraform output posgresql_fqdn)" > ./outputs/posgresql_fqdn.txt
 - deploy images to azure container registry from GitHub (change username and password)
 
 FOR DEPLOYING AKS
 - az login
 - terraform init
 - terraform plan -out main.tfplan
-- terraform apply main.tfplan
-- echo "$(terraform output kube_config)" > ./outputs/azurek8s.yaml
-- remove EOT in ./outputs/azurek8s.yaml
-- export ../aks-deployment/outputs/azurek8s.yaml
+- terraform apply main.tfplan  
+// echo "$(terraform output kube_config)" > ./outputs/azurek8s.yaml
+// remove EOT in ./outputs/azurek8s.yaml
+// export KUBECONFIG=./outputs/azurek8s.yaml
+
+Move to k8s
+- $kubernetes_cluster_name=$(terraform output kubernetes_cluster_name)
+- $resource_group_name=$(terraform output resource_group_name)
+- az aks get-credentials --resource-group $resource_group_name --name $kubernetes_cluster_name
 - kubectl get nodes
-- kubectl create secret generic cosmos --from-file=MONGODB_URI=./cosmos.txt
-- kubectl apply file.yaml
+- kubectl create secret generic cosmos --from-file=MONGODB_URI=../datastore-deployment/outputs/cosmos.txt
+- kubectl apply -f fusionauth.yaml
+- kubectl get service fusionauth --output jsonpath='{.status.loadBalancer.ingress[0].ip}' > some file.txt
+- create secret with the public ip
+- kubectl apply allfiles.yaml (except ingress)
+- helm install ingress-nginx ingress-nginx/ingress-nginx \
+    --set controller.replicaCount=1 \
+    --set controller.nodeSelector."kubernetes\.io/os"=linux \
+    --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
+    --set controller.service.externalTrafficPolicy=Local \
+    --set controller.service.loadBalancerIP="20.118.177.37"
+- kubectl get service --namespace default ingress-nginx-controller --output wide --watch
+- kubectl apply ingress.yaml
+
 
 ====================================  
 Send image to container registry (sudo)
