@@ -1,40 +1,38 @@
 <template>
-  <main>
-    <div style="height: 90vh; width: 90vw">
-      <l-map
-        :center="[47.41322, -1.219482]"
-        :zoom="5"
-        :min-zoom="1"
-        :max-zoom="10"
-        :zoom-animation="true"
-        style="cursor: crosshair"
-      >
-        <l-tile-layer
-          url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
-          min-zoom="1"
-          max-zoom="14"
-          inertia-max-speed="500"
-          attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-        />
-        <l-polygon
-          v-for="polygon in polygons"
-          :key="polygon.key"
-          :lat-lngs="polygon.latlngs"
-          :color="polygon.color"
-          :weight="0"
-          :fill-opacity="0.5"
-          :fill="true"
-          :fill-color="polygon.color"
-          :smooth-factor="0"
-        />
-      </l-map>
-    </div>
-  </main>
+  <div style="height: 90vh; width: 100vw">
+    <l-map
+      :center="[47.41322, -1.219482]"
+      :zoom="5"
+      :min-zoom="1"
+      :max-zoom="10"
+      :zoom-animation="true"
+      style="cursor: crosshair"
+    >
+      <l-tile-layer
+        url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
+        min-zoom="1"
+        max-zoom="14"
+        inertia-max-speed="500"
+        attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+      />
+      <l-polygon
+        v-for="polygon in polygons"
+        :key="polygon.key"
+        :lat-lngs="polygon.latlngs"
+        :color="polygon.color"
+        :weight="0"
+        :fill-opacity="0.5"
+        :fill="true"
+        :fill-color="polygon.color"
+        :smooth-factor="0"
+      />
+    </l-map>
+  </div>
 </template>
 <script>
-import { LMap, LTileLayer, LControlLayers, LRectangle, LPolygon } from "@vue-leaflet/vue-leaflet"
-import "leaflet/dist/leaflet.css"
-import * as requests from "../js/requests.js"
+import { LMap, LTileLayer, LControlLayers, LRectangle, LPolygon } from '@vue-leaflet/vue-leaflet'
+import 'leaflet/dist/leaflet.css'
+import * as requests from '../js/requests.js'
 
 export default {
   components: {
@@ -56,24 +54,23 @@ export default {
   computed: {},
   methods: {
     async loadHeatRegions() {
-
       const getDesityColorForFloat = (float) => {
         let h = (1.0 - float) * 240
-        return "hsl(" + h + ", 100%, 50%)";
+        return 'hsl(' + h + ', 100%, 50%)'
       }
 
       // get heat regions
       let heatmapData = await requests.getHeatmapData()
-      console.log("heatmapData", heatmapData);
+      console.log('heatmapData', heatmapData)
       if (!heatmapData) {
         return
       }
 
       // create the polygons
-      let heatRegions = heatmapData.heatRegions;
-      this.polygons = [];
+      let heatRegions = heatmapData.heatRegions
+      this.polygons = []
       for (let i = 0; i < heatRegions.length; i++) {
-        let region = heatRegions[i];
+        let region = heatRegions[i]
         const polygon = {
           key: region.polygonname,
           latlngs: region.polygon,
@@ -83,12 +80,11 @@ export default {
         this.polygons.push(polygon)
       }
 
-      console.table(this.polygons);
+      console.table(this.polygons)
     }
   },
   async mounted() {
     this.loadHeatRegions()
   }
-
 }
 </script>
