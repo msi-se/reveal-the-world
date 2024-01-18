@@ -3,9 +3,22 @@ server {
     server_name localhost;
 
     location / {
-        proxy_pass http://host.docker.internal:5173;
+        proxy_pass http://host.docker.internal:5173/;
+        proxy_redirect     off;
 
         # proxy headers
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+    }
+
+    location /adac/ {
+        proxy_pass http://host.docker.internal:5174/;
+        proxy_redirect     off;
+
+        # proxy headers
+        proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
         proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Host $server_name;
@@ -13,32 +26,21 @@ server {
     
     location /auth/ {
 
-        # route /auth/ to localhost:8080/ (root)
-        proxy_pass http://host.docker.internal:8080/;
+        # route /auth/ to localhost:1337/ (root)
+        proxy_pass http://host.docker.internal:1337/;
 
         # rewrite /auth/ to / (root)
         rewrite ^/auth/(.*) /$1 break;
 
+        proxy_redirect     off;
+
         # proxy headers
+        proxy_set_header   Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $host;
     }
     
-    location /api/user/ {
-
-        # route /api/user/ to localhost:3001/ (root)
-        proxy_pass http://host.docker.internal:3001/;
-
-        # rewrite /api/user/ to / (root)
-        rewrite ^/api/user/(.*) /$1 break;
-
-        # proxy headers
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Host $host;
-    }
-
     location /api/pin/ {
 
         # route /api/pin/ to localhost:3002/ (root)
@@ -47,7 +49,10 @@ server {
         # rewrite /api/pin/ to / (root)
         rewrite ^/api/pin/(.*) /$1 break;
 
+        proxy_redirect     off;
+        
         # proxy headers
+        proxy_set_header   Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $host;
@@ -61,7 +66,10 @@ server {
         # rewrite /api/heatmap/ to / (root)
         rewrite ^/api/heatmap/(.*) /$1 break;
 
+        proxy_redirect     off;
+        
         # proxy headers
+        proxy_set_header   Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $host;
@@ -75,7 +83,10 @@ server {
         # rewrite /api/analytics/ to / (root)
         rewrite ^/api/analytics/(.*) /$1 break;
 
+        proxy_redirect     off;
+        
         # proxy headers
+        proxy_set_header   Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $host;
@@ -89,7 +100,10 @@ server {
         # rewrite /api/update/ to / (root)
         rewrite ^/api/update/(.*) /$1 break;
 
+        proxy_redirect     off;
+        
         # proxy headers
+        proxy_set_header   Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $host;

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getUser } from '../js/user';
+import { PATH } from '../js/config';
 
 const routeGuard = (fallback) => {
   return () => {
@@ -9,27 +10,25 @@ const routeGuard = (fallback) => {
   }
 }
 
-
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
+      path: `/`,
       name: 'home',
       component: () => import('../views/HomeView.vue'),
     },
     {
-      path: '/pin',
+      path: `/pin`,
       name: 'pin',
       component: () => import('../views/PinView.vue'),
-      beforeEnter: routeGuard('/')
+      beforeEnter: routeGuard(`/`)
     },
     {
-      path: '/heatmap',
+      path: `/heatmap`,
       name: 'heatmap',
       component: () => import('../views/HeatmapView.vue'),
-      beforeEnter: routeGuard('/')
+      beforeEnter: routeGuard(`/`)
     }
   ]
 })

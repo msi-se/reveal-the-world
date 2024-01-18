@@ -1,10 +1,13 @@
+import { TENANT, TENANT_CLIENT_ID } from "./config";
+
 var user = null;
 
 export function getUser() {
     if (user != null) {
         return user;
     }
-    const userDetails = document.cookie.match(/userDetails=([^;]+)/)?.[1];
+    const regex = new RegExp(`${TENANT}-userDetails=([^;]+)`);
+    const userDetails = document.cookie.match(regex)?.[1];
     if (!userDetails) {
         return null;
     }
@@ -16,10 +19,10 @@ export function getUser() {
 }
 
 export function login() {
-    window.location.href = "/auth/login";
+    window.location.href = `/auth/login?tenant=${TENANT}&clientId=${TENANT_CLIENT_ID}`;
 }
 
 export function logout() {
     user = null;
-    window.location.href = "/auth/logout";
+    window.location.href = `/auth/logout?clientId=${TENANT_CLIENT_ID}`;
 }

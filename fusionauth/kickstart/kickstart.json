@@ -7,10 +7,7 @@
     "defaultTenantId": "d7d09513-a3f5-401c-9685-34ab6c552453",
     "adminUsername": "admin",
     "adminPassword": "password",
-    "adminUserId": "00000000-0000-0000-0000-000000000001",
-    "username": "richard",
-    "userPassword": "password",
-    "userUserId": "00000000-0000-0000-0000-111111111111"
+    "adminUserId": "00000000-0000-0000-0000-000000000001"
   },
   "apiKeys": [
     {
@@ -21,28 +18,16 @@
   "requests": [
     {
       "method": "POST",
-      "url": "/api/key/generate/#{asymmetricKeyId}",
-      "tenantId": "#{defaultTenantId}",
-      "body": {
-        "key": {
-          "algorithm": "RS256",
-          "name": "For exampleapp",
-          "length": 2048
-        }
-      }
-    },
-    {
-      "method": "POST",
       "url": "/api/application/#{applicationId}",
       "tenantId": "#{defaultTenantId}",
       "body": {
         "application": {
-          "name": "Reveal The World",
+          "name": "default-app",
           "oauthConfiguration": {
             "authorizedRedirectURLs": [
               "http://localhost/auth/oauth-redirect"
             ],
-            "logoutURL": "http://localhost/auth/oauth2/logout",
+            "logoutURL": "http://localhost/auth/oauth2/logout?tenant=default",
             "clientSecret": "#{clientSecret}",
             "enabledGrants": [
               "authorization_code",
@@ -52,9 +37,7 @@
             "requireRegistration": true
           },
           "jwtConfiguration": {
-            "enabled": true,
-            "accessTokenKeyId": "#{asymmetricKeyId}",
-            "idTokenKeyId": "#{asymmetricKeyId}"
+            "enabled": true
           },
           "registrationConfiguration": {
             "enabled": true,
@@ -82,19 +65,6 @@
         "user": {
           "username": "#{adminUsername}",
           "password": "#{adminPassword}"
-        }
-      }
-    },
-    {
-      "method": "POST",
-      "url": "/api/user/registration/#{userUserId}",
-      "body": {
-        "user": {
-          "username": "#{username}",
-          "password": "#{userPassword}"
-        },
-        "registration": {
-          "applicationId": "#{applicationId}"
         }
       }
     }

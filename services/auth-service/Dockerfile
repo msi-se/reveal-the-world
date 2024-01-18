@@ -3,5 +3,5 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-EXPOSE 8080
+EXPOSE 1337
 ENTRYPOINT ["npm", "start"]

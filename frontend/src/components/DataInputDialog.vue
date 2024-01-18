@@ -1,54 +1,57 @@
 <template>
   <div class="floating-dialog">
-    <input
+    <v-text-field
+      variant="solo-filled"
       type="text"
       v-model="name"
-      placeholder="Name of the trip ('Wien 2013')"
-      style="width: 100%;"
-    >
-    <input
+      label="Name of the trip ('Wien 2013')"
+    ></v-text-field>
+    <v-text-field
+      variant="solo-filled"
       type="text"
       v-model="description"
-      placeholder="Tell us about your trip (Description)"
-      style="width: 100%;"
-    >
-    <input
+      label="Tell us about your trip (Description)"
+    ></v-text-field>
+    <v-text-field
+      variant="solo-filled"
       type="date"
       v-model="date"
-      placeholder="When did you go there? (Date)"
-      style="width: 100%;"
-    >
-    <input
+      label="When did you go there? (Date)"
+    ></v-text-field>
+    <v-text-field
+      variant="solo-filled"
       type="text"
       v-model="companions"
-      placeholder="How many people were with you? (0 if alone)"
-      style="width: 100%;"
-    >
-    <input
+      label="How many people were with you? (0 if alone)"
+    ></v-text-field>
+    <v-text-field
+      variant="solo-filled"
       type="text"
       v-model="duration"
-      placeholder="How long did you stay? (in days)"
-      style="width: 100%;"
-    >
-    <input
+      label="How long did you stay? (in days)"
+    ></v-text-field>
+    <v-text-field
+      variant="solo-filled"
       type="text"
       v-model="budget"
-      placeholder="How much did you spend? (in €)"
-      style="width: 100%;"
+      label="How much did you spend? (in €)"
+    ></v-text-field>
+    <v-btn @click="$emit('cancel')" class="mr-4"> Cancel </v-btn>
+    <v-btn
+      @click="
+        $emit('save', {
+          name: this.name,
+          description: this.description,
+          date: this.date,
+          companions: this.companions,
+          duration: this.duration,
+          budget: this.budget
+        })
+      "
+      color="primary"
     >
-    <button @click="$emit('cancel')">
-      Cancel
-    </button>
-    <button @click="$emit('save', {
-      name: this.name,
-      description: this.description,
-      date: this.date,
-      companions: this.companions,
-      duration: this.duration,
-      budget: this.budget
-    })">
       Save
-    </button>
+    </v-btn>
   </div>
 </template>
 
@@ -66,17 +69,14 @@ export default {
       budget: ''
     }
   },
-  methods: {
-  }
-  
-
+  methods: {}
 }
 </script>
 
 <style scoped>
-
 /* should float in the middle */
 .floating-dialog {
+  width: min(90vw, 500px);
   position: absolute;
   top: 50%;
   left: 50%;
@@ -87,5 +87,4 @@ export default {
   box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
   z-index: 100000;
 }
-
 </style>

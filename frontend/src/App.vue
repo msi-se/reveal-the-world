@@ -1,84 +1,80 @@
 <template>
-  <h1>Reveal the World</h1>
-  <header>
-    <div class="wrapper">
-      <nav>
-        <a href="/pin">My Travel Pins</a>
-        <a href="/heatmap">Heatmap</a>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <v-layout>
+    <v-app-bar :elevation="16" :color="tenantBackgroundColor">
+      <img
+        alt="logo-black"
+        :src="`${TENANT_LOGO}`"
+        width="200"
+        class="d-inline-block align-top ml-2"
+        style="cursor: pointer"
+      />
+      <a :href="`${PATH}/`" style="text-decoration: none; color: inherit">
+        <div class="mr-15 ml-4 app-bar-title" style="cursor: pointer">
+          {{ TENANT }}
+        </div>
+      </a>
+      <v-spacer></v-spacer>
+      <a :href="`${PATH}/pin`">
+        <v-btn class="mr-2"> My Travel Records </v-btn>
+      </a>
+      <a :href="`${PATH}/heatmap`">
+        <v-btn class="mr-2"> Heatmap </v-btn>
+      </a>
+      <!-- display login state -->
+      <div v-if="isLoggedIn" class="mr-2">
+        <p>Logged in as {{ username }}</p>
+      </div>
+    </v-app-bar>
+    <v-main>
+      <RouterView />
+    </v-main>
+  </v-layout>
 </template>
 
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import { TENANT, PATH, TENANT_LOGO, TENANT_BACKGROUNDCOLOR } from './js/config.js'
 
-console.log(document.cookie);
+import { computed, ref } from 'vue'
+import { getUser, login, logout } from './js/user'
+
+// get userDetails from cookie with regex match
+
+let isLoggedIn = computed(() => {
+  return getUser() !== null
+})
+
+let username = computed(() => {
+  return getUser().username
+})
+
+let tenantBackgroundColor = ref(TENANT_BACKGROUNDCOLOR || '#ffffff')
+
+console.log('TENANT: ' + TENANT + ' PATH: ' + PATH, 'TENANT_BACKGROUNDCOLOR: ' + TENANT_BACKGROUNDCOLOR)
+
+console.log(document.cookie)
 </script>
 
+<style>
 
-<style scoped>
 header {
   line-height: 1.5;
   max-height: 100vh;
 }
 
 .logo {
+  width: 100%;
+  max-width: 200px;
+
   display: block;
   margin: 0 auto 2rem;
 }
 
+/* all nav elements behind each other */
 nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 </style>

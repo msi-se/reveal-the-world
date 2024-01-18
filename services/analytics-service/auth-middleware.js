@@ -36,7 +36,16 @@ const getKey = async (header, callback) => {
 
 
 const auth = async (req, res, next) => {
-    const userTokenCookie = req.cookies?.userToken;
+    const tenant = `${req.headers?.tenant}`;
+    if (!tenant) {
+        console.error('Missing tenant from query params');
+        res.status(400).json(JSON.stringify({
+            error: 'tenant missing'
+        }))
+        return;
+    }
+
+    const userTokenCookie = req.cookies[`${tenant}-userToken`];
     const user = await validateUser(userTokenCookie);
     if (!user) {
         res.status(403).json(JSON.stringify({
@@ -44,9 +53,11 @@ const auth = async (req, res, next) => {
         }))
         return;
     }
-    res.user = {
+    req.user = {
         username: user.preferred_username,
         id: user.sub,
+        tenant: tenant,
+        tenantId: user.tid
     };
     next();
 }

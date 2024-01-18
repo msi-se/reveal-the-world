@@ -9,7 +9,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), "../.env") });
 const MONDODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017";
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost";
 
 // connect to MongoDB
 const client = new MongoClient(MONDODB_URI);
@@ -70,13 +69,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(auth);
 
-// define routes
-app.get("/", (req, res) => {
-    res.status(200).send("Pin service is running");
-});
 
 app.post("/", async (req, res) => {
     let pin = req.body;
+    pin.username = req.user.username;
 
     const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
     if (!polygon) {
@@ -98,8 +94,9 @@ app.post("/", async (req, res) => {
     res.send(pin);
 });
 
-app.get("/:username", async (req, res) => {
-    const pins = await pinWithPolygonView.find({ username: req.params.username }).toArray();
+app.get("/", async (req, res) => {
+    const user = req.user;
+    const pins = await pinWithPolygonView.find({ username: user.username }).toArray();
     res.send(pins);
 });
 
