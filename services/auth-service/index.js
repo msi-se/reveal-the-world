@@ -4,7 +4,6 @@ import cookieParser from 'cookie-parser';
 import pkceChallenge from 'pkce-challenge';
 import verify from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
-import * as path from 'path';
 
 // Add environment variables
 import * as dotenv from "dotenv";
@@ -65,7 +64,7 @@ const client = new FusionAuthClient('noapikeyneeded', internalFusionAuthURL);
 
 app.use(cookieParser());
 /** Decode Form URL Encoded data */
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/login', async (req, res, next) => {
   const tenant = `${req.query?.tenant}`;
