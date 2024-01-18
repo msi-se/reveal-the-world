@@ -3,7 +3,7 @@
     <v-app-bar :elevation="16" :color="tenantBackgroundColor">
       <img
         alt="logo-black"
-        :src="`${TENANT_LOGO}`"
+        :src="TENANT_LOGO"
         width="200"
         class="d-inline-block align-top ml-2"
         style="cursor: pointer"
