@@ -50,7 +50,7 @@ let username = computed(() => {
 
 let tenantBackgroundColor = ref(TENANT_BACKGROUNDCOLOR || '#ffffff')
 
-console.log('TENANT: ' + TENANT + ' PATH: ' + PATH, 'TENANT_BACKGROUNDCOLOR: ' + TENANT_BACKGROUNDCOLOR)
+console.log('TENANT: ' + TENANT + ' PATH: ' + PATH, 'TENANT_BACKGROUNDCOLOR: ' + TENANT_BACKGROUNDCOLOR, 'TENANT_LOGO: ' + TENANT_LOGO)
 
 console.log(document.cookie)
 </script>

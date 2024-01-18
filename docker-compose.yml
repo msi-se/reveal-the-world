@@ -34,7 +34,18 @@ services:
     environment:
       - VITE_TENANT=default
       - VITE_TENANT_CLIENT_ID=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
-      - VITE_TENANT_LOGO=src/assets/default-logo.png
+      - VITE_TENANT_LOGO=/default-logo.png
+      - VITE_TENANT_BACKGROUNDCOLOR=#FFFFFF
+      - VITE_BACKEND_URL=http://localhost/api
+  frontend-adac:
+    build:
+      context: ./frontend
+    ports:
+      - "5174:3000"
+    environment:
+      - VITE_TENANT=adac
+      - VITE_TENANT_CLIENT_ID=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
+      - VITE_TENANT_LOGO=/adac-logo.png
       - VITE_TENANT_BACKGROUNDCOLOR=#FFFF00
       - VITE_BACKEND_URL=http://localhost/api
   pin-service:
