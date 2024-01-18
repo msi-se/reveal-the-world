@@ -11,11 +11,11 @@
       style="cursor: crosshair"
     >
       <l-tile-layer
-        url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png"
+        url="http://tile.openstreetmap.org/{z}/{x}/{y}.png"
         min-zoom="1"
         max-zoom="14"
         inertia-max-speed="500"
-        attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+        attribution='&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
       />
       <l-polygon
         v-for="marker in markers"
