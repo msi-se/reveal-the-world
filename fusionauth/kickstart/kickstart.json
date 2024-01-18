@@ -7,10 +7,7 @@
     "defaultTenantId": "d7d09513-a3f5-401c-9685-34ab6c552453",
     "adminUsername": "admin",
     "adminPassword": "password",
-    "adminUserId": "00000000-0000-0000-0000-000000000001",
-    "username": "richard",
-    "userPassword": "password",
-    "userUserId": "00000000-0000-0000-0000-111111111111"
+    "adminUserId": "00000000-0000-0000-0000-000000000001"
   },
   "apiKeys": [
     {
@@ -68,19 +65,6 @@
         "user": {
           "username": "#{adminUsername}",
           "password": "#{adminPassword}"
-        }
-      }
-    },
-    {
-      "method": "POST",
-      "url": "/api/user/registration/#{userUserId}",
-      "body": {
-        "user": {
-          "username": "#{username}",
-          "password": "#{userPassword}"
-        },
-        "registration": {
-          "applicationId": "#{applicationId}"
         }
       }
     }

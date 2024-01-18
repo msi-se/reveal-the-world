@@ -66,6 +66,10 @@ app.use(cookieParser());
 /** Decode Form URL Encoded data */
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/auth/login', async (req, res, next) => {
+  res.send("WRONG PATH!");
+});
+
 app.get('/login', async (req, res, next) => {
   const tenant = `${req.query?.tenant}`;
   const clientId = `${req.query?.clientId}`;
