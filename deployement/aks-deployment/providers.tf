@@ -19,6 +19,14 @@ terraform {
       version = "0.9.1"
     }
   }
+
+  backend "azurerm" {
+      resource_group_name  = "rg-rtw-tfstate"
+      storage_account_name = "rtwtfstate18005"
+      container_name       = "rtw-tfstate"
+      key                  = "terraform.tfstate"
+  }
+
 }
 
 provider "azurerm" {

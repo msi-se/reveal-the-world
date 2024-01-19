@@ -9,10 +9,18 @@ jq
 - export $(grep -v '^#' .env | xargs)
 
 # ENABLE AN AZURE STORAGE TFSTATE 
-
+- RESOURCE_GROUP_NAME=rg-rtw-tfstate
+- CONTAINER_NAME=rtw-tfstate
+- STORAGE_ACCOUNT_NAME=rtwtfstate18005
+- az group create --name $RESOURCE_GROUP_NAME --location westus3
+- az storage account create --resource-group $RESOURCE_GROUP_NAME --name $STORAGE_ACCOUNT_NAME --sku Standard_LRS --encryption-services blob
+- az storage container create --name $CONTAINER_NAME --account-name $STORAGE_ACCOUNT_NAME
+- ACCOUNT_KEY=$(az storage account keys list --resource-group $RESOURCE_GROUP_NAME --account-name $STORAGE_ACCOUNT_NAME --query '[0].value' -o tsv)
+- export ARM_ACCESS_KEY=$ACCOUNT_KEY
 
 # FOR DEPLOYING DATASTORE
 Already actions secret:
+  - ARM_ACCESS_KEY (necessary for terraform)
   - ACCESS_TOKEN
   - ORG_NAME
   - REPO_NAME
@@ -66,6 +74,9 @@ Already actions secret:
 
 
 # FOR DEPLOYING AKS
+Already actions secret:
+  - ARM_ACCESS_KEY (necessary for terraform)
+
 - az login
 
 - echo -n $ACR_ID > ./acr_id.txt 
@@ -109,6 +120,7 @@ Already actions secret:
   - FUSIONAUTH_DATABASE_USERNAME
   - FUSIONAUTH_DATABASE_PASSWORD
 
+- az login
 - az aks get-credentials --resource-group $AKS_RESOURCE_GROUP_NAME --name $KUBERNETES_CLUSTER_NAME
 - kubectl get nodes
 - DATABASE_URL=jdbc:postgresql://${POSTGRESQL_FQDN}:5432/fusionauth
@@ -126,6 +138,7 @@ Already actions secret:
 Already actions secret:
   - default_clientSecret
 
+- az login
 - az aks get-credentials --resource-group $AKS_RESOURCE_GROUP_NAME --name $KUBERNETES_CLUSTER_NAME
 - kubectl get nodes
 
@@ -158,6 +171,7 @@ Already actions secret:
 - kubectl apply -f ingress.yaml
 
 # K8S services update after image only (execpt ingress and fusionauth)
+- az login
 - az aks get-credentials --resource-group $AKS_RESOURCE_GROUP_NAME --name $KUBERNETES_CLUSTER_NAME
 - kubectl get nodes
 
@@ -175,6 +189,7 @@ Already actions secret:
 - kubectl rollout restart deploy servicename
 
 # K8S services update after K8S yaml file update (execpt ingress and fusionauth)
+- az login
 - az aks get-credentials --resource-group $AKS_RESOURCE_GROUP_NAME --name $KUBERNETES_CLUSTER_NAME
 - kubectl get nodes
 
