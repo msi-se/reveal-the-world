@@ -21,47 +21,6 @@ const pinCollection = database.collection("pin");
 const polygonCollection = database.collection("polygon");
 const heatRegionCollection = database.collection("heatRegion");
 
-// create a view that joins the pin and polygon collections
-try { await database.command({ drop: "pinWithPolygonView" }); } catch (e) { }
-await database.command({
-    create: "pinWithPolygonView",
-    viewOn: "pin",
-    pipeline: [
-        {
-            $lookup: {
-                from: "polygon",
-                localField: "polygonname",
-                foreignField: "polygonname",
-                as: "polygondata",
-            },
-        },
-        {
-            $project: {
-                _id: 0,
-                id: 1,
-                username: 1,
-                longitude: 1,
-                latitude: 1,
-                name: 1,
-                description: 1,
-                date: 1,
-                companions: 1,
-                duration: 1,
-                budget: 1,
-                polygon: "$polygondata.polygon",
-                polygonname: 1,
-            },
-        },
-        {
-            $unwind: {
-                path: "$polygon",
-                preserveNullAndEmptyArrays: true,
-            },
-        },
-    ],
-});
-const pinWithPolygonView = database.collection("pinWithPolygonView");
-
 // start express server
 const app = express();
 const port = 3002;
@@ -104,11 +63,21 @@ app.get("/", async (req, res) => {
 
     debug("pin-service: username in get request: ", req.user.username);
 
-    const pins = await pinWithPolygonView.find({ "username": req.user.username }).toArray();
+    const pins = await pinCollection.find({ "username": req.user.username }).toArray();
 
-    debug("pin-service: received pins from database: ", pins);
+    // add the polygon outlines to the pins
+    const polygonnames = pins.map(pin => pin.polygonname);
+    const polygons = await polygonCollection.find({ polygonname: { $in: polygonnames } }).toArray();
+    const pinsWithPolygons = pins.map(pin => {
+        const polygon = polygons.find(polygon => polygon.polygonname === pin.polygonname);
+        if (!polygon) return pin;
+        pin.polygon = polygon.polygon;
+        return pin;
+    });
 
-    res.send(pins);
+    debug("pin-service: received pins from database: ", pinsWithPolygons);
+
+    res.send(pinsWithPolygons);
 });
 
 app.listen(port, () => console.log(`Example app listening on http://localhost:${port}`));
