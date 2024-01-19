@@ -22,7 +22,7 @@ const polygonCollection = database.collection("polygon");
 const heatRegionCollection = database.collection("heatRegion");
 
 // create a view that joins the pin and polygon collections
-await database.command({ drop: "pinWithPolygonView" });
+try { await database.command({ drop: "pinWithPolygonView" }); } catch (e) { }
 await database.command({
     create: "pinWithPolygonView",
     viewOn: "pin",
