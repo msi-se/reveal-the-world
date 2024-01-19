@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-%tenant%-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-%tenant%
+  template:
+    metadata:
+      labels:
+        app: frontend-%tenant%
+    spec:
+      containers:
+      - name: frontend-%tenant%
+        image: rtwcr1.azurecr.io/frontend
+        ports:
+        - containerPort: 3000
+        envFrom:
+          - secretRef:
+            name: all_credentials
+        env:
+          - name: VITE_TENANT
+            value: %tenant%
+          - name: VITE_TENANT_CLIENT_ID
+            value: %applicationId%
+          - name: VITE_TENANT_BACKGROUNDCOLOR
+            value: "%backgroundColor%"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-%tenant%
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: %port%
+    targetPort: 3000
+  selector:
+    app: frontend-%tenant%

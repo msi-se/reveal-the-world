@@ -1,5 +1,7 @@
 const uuid = require('uuid');
 const { FusionAuthClient } = require('@fusionauth/node-client');
+const prompt = require('prompt-sync')();
+const fs = require('fs');
 
 const appUrl = 'http://localhost';
 const client = new FusionAuthClient('33052c8a-c283-4e96-9d2a-eb1215c69f8f-not-for-prod', 'http://localhost:9011');
@@ -68,13 +70,27 @@ async function create(tenantName) {
     }
 }
 
+function createK8sFrontendYaml(tenant, applicationId, port, backgroundColor) {
+    let frontendYaml = fs.readFileSync('./frontend-template.yaml', 'utf8');
+    const replacements = { "%tenant%": tenant, "%applicationId%": applicationId, "%port%": port, "%backgroundColor%": backgroundColor };
+    let frontendTenantYaml = frontendYaml.replace(/%\w+%/g, function(all) {
+        return replacements[all] || all;
+    });
+    // TODO: deployement typo
+    fs.writeFileSync(`../deployement/k8s/frontend-${tenant}.yaml`, frontendTenantYaml);
+}
+
 async function main() {
-    const tenantName = "adac";
-    const {tenantId, applicationId, clientSecret} = await create(tenantName);
-    console.log(`Created tenant ${tenantName}`);
+    const tenant = prompt("Tenant name (key): ");
+    const port = prompt("Port: ");
+    const backgroundColor = "#" + prompt("Background-Color: #");
+    const {tenantId, applicationId, clientSecret} = await create(tenant);
+    console.log(`Created tenant ${tenant}`);
     console.log(`- Tenant ID: ${tenantId}`);
     console.log(`- Application ID: ${applicationId}`);
     console.log(`- Client Secret: ${clientSecret}`);
+    console.log();
+    createK8sFrontendYaml(tenant, applicationId, port, backgroundColor);
 }
 
 main();
