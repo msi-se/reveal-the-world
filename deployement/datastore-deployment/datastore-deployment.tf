@@ -10,6 +10,26 @@ resource "azurerm_container_registry" "cr1" {
   location            = azurerm_resource_group.rgdata.location
   sku                 = "Standard"
 }
+resource "azurerm_container_registry_scope_map" "rtwcr1-scope-map-push" {
+  name                    = "rtwcr1-scope-map-push"
+  container_registry_name = azurerm_container_registry.cr1.name
+  resource_group_name     = azurerm_resource_group.rgdata.name
+  actions = [
+    "repositories/*/content/write",
+    "repositories/*/metadata/write"
+  ]
+}
+resource "azurerm_container_registry_token" "rtwcr1-token" {
+  name                    = "rtwcr1-token"
+  container_registry_name = azurerm_container_registry.cr1.name
+  resource_group_name     = azurerm_resource_group.rgdata.name
+  scope_map_id            = azurerm_container_registry_scope_map.rtwcr1-scope-map-push.id
+}
+
+resource "azurerm_container_registry_token_password" "rtwcr1-token-password" {
+  container_registry_token_id = azurerm_container_registry_token.rtwcr1-token.id
+  password1 {}
+}
 
 # Cosmos DB
 resource "random_pet" "azurerm_cosmosdb_account_name" {
@@ -91,31 +111,14 @@ resource "azurerm_cosmosdb_mongo_collection" "heatRegionState" {
     keys   = ["_id"]
     unique = true
   }
-}
-resource "azurerm_cosmosdb_mongo_collection" "heatRegionStateWithPolygonView" {
-  name                = "heatRegionStateWithPolygonView"
-  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
-  account_name        = azurerm_cosmosdb_account.cosmos.name
-  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
   index {
-    keys   = ["_id"]
+    keys   = ["timestamp"]
     unique = true
   }
 }
 
 ## Pin collections
 # pin and polygon
-resource "azurerm_cosmosdb_mongo_collection" "user" {
-  name                = "pin"
-  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
-  account_name        = azurerm_cosmosdb_account.cosmos.name
-  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
-  index {
-    keys   = ["_id"]
-    unique = true
-  }
-}
-
 resource "azurerm_cosmosdb_mongo_collection" "heatRegion" {
   name                = "heatRegion"
   resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
@@ -126,9 +129,8 @@ resource "azurerm_cosmosdb_mongo_collection" "heatRegion" {
     unique = true
   }
 }
-
-resource "azurerm_cosmosdb_mongo_collection" "pinWithPolygonView" {
-  name                = "pinWithPolygonView"
+resource "azurerm_cosmosdb_mongo_collection" "analytics" {
+  name                = "analytics"
   resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
   account_name        = azurerm_cosmosdb_account.cosmos.name
   database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
@@ -139,13 +141,20 @@ resource "azurerm_cosmosdb_mongo_collection" "pinWithPolygonView" {
 }
 
 # Posgresql
+resource "random_password" "postgres_password" {
+  length           = 16
+  special          = true
+  override_special = "!"
+}
+
 resource "azurerm_postgresql_flexible_server" "posgresql" {
   name                   = "rtw-fusionauth-psqlserver"
   resource_group_name    = azurerm_resource_group.rgdata.name
   location               = azurerm_resource_group.rgdata.location
   version                = "14"
   administrator_login    = "psqladmin"
-  administrator_password = "Password!"
+  administrator_password = random_password.postgres_password.result
+  zone                   = "1"
 
   storage_mb = 32768
   sku_name   = "B_Standard_B1ms"

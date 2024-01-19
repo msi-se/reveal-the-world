@@ -3,3 +3,4 @@ terraform.tfstate*
 *.tfplan
 outputs
 aks-test-app
+acr_id.txt

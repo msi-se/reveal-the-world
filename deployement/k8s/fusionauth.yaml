@@ -17,17 +17,18 @@ spec:
           image: fusionauth/fusionauth-app
           ports: 
           - containerPort: 9011
+          envFrom:
+          - secretRef:
+              name: posgresqlurl
+          - secretRef:
+              name: posgresqlrootusername
+          - secretRef:
+              name: posgresqlrootpassword
+          - secretRef:
+              name: fusionauthdatabaseusername
+          - secretRef:
+              name: fusionauthdatabasepassword
           env:
-            - name: DATABASE_URL
-              value: jdbc:postgresql://rtw-fusionauth-psqlserver.postgres.database.azure.com:5432/fusionauth
-            - name: DATABASE_ROOT_PASSWORD
-              value: Password!
-            - name: DATABASE_ROOT_USERNAME
-              value: psqladmin
-            - name: DATABASE_USERNAME 
-              value: fusionauth
-            - name: DATABASE_PASSWORD
-              value: hkaLBM3RVnyYeYeqE3WI1w2e4Avpy0Wd5O3s3
             - name: FUSIONAUTH_APP_RUNTIME_MODE
               value: development
             - name: FUSIONAUTH_APP_MEMORY

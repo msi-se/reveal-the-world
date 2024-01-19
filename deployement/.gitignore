@@ -1,2 +1,3 @@
 .terraform*
-k8s/credentials.yaml
+.env
+body.json

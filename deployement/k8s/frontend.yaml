@@ -19,8 +19,8 @@ spec:
         - containerPort: 3000
         envFrom:
           - secretRef:
-            name: all_credentials
-        env:
+              name: vitebackendurl
+        env: 
           - name: VITE_TENANT
             value: default
           - name: VITE_TENANT_CLIENT_ID

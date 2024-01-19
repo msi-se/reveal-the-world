@@ -19,7 +19,9 @@ spec:
         - containerPort: 3005
         envFrom:
           - secretRef:
-            name: all_credentials
+              name: mongodburi
+          - secretRef:
+              name: internalfusionauthurl
 ---
 apiVersion: v1
 kind: Service

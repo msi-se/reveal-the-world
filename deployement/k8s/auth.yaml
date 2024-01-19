@@ -19,7 +19,13 @@ spec:
         - containerPort: 1337
         envFrom:
           - secretRef:
-            name: all_credentials
+              name: internalfusionauthurl
+          - secretRef:
+              name: fusionauthurl
+          - secretRef:
+              name: appurl
+          - secretRef:
+              name: defaultclientsecret
 ---
 apiVersion: v1
 kind: Service

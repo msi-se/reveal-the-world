@@ -47,6 +47,6 @@ resource "azurerm_kubernetes_cluster" "k8s" {
 resource "azurerm_role_assignment" "link_k8s_cr1" {
   principal_id                     = azurerm_kubernetes_cluster.k8s.kubelet_identity[0].object_id
   role_definition_name             = "AcrPull"
-  scope                            = "/subscriptions/b12f2641-0be6-48bf-af5d-4c5ec041d5f8/resourceGroups/rg-rtw-data-store/providers/Microsoft.ContainerRegistry/registries/rtwcr1"
+  scope                            = file("./acr_id.txt")
   skip_service_principal_aad_check = true
 }
