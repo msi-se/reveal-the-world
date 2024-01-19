@@ -22,7 +22,7 @@ const polygonCollection = database.collection("polygon");
 const heatRegionStateCollection = database.collection("heatRegionState");
 
 // create a view that joins the heatRegion and polygon collections
-await database.command({ drop: "heatRegionStateWithPolygonView" });
+try { await database.command({ drop: "heatRegionStateWithPolygonView" }); } catch (e) { }
 // polygon: {polygonname: string, polygon: []}
 // heatRegionWithPolygonView: { timestamp: string, heatRegions: [{ polygonname: string, density: number (0-1), count: number, polygon: [] }] }
 await database.command({
