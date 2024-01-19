@@ -28,7 +28,7 @@ const app = express();
 const port = 3005;
 app.use(express.json());
 app.use(cookieParser());
-app.use(auth);
+// app.use(auth);
 
 // define routes
 app.get("/", (req, res) => {

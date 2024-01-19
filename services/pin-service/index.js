@@ -68,11 +68,16 @@ const port = 3002;
 app.use(express.json());
 app.use(cookieParser());
 app.use(auth);
-
+const debug = (...args) => { console.log(...args); };
 
 app.post("/", async (req, res) => {
     let pin = req.body;
+
+    debug("pin-service: received pin: ", pin);
+
     pin.username = req.user.username;
+
+    debug("pin-service: username in request: ", req.user.username);
 
     const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
     if (!polygon) {
@@ -96,35 +101,15 @@ app.post("/", async (req, res) => {
 
 app.get("/", async (req, res) => {
     const user = req.user;
+
+    debug("pin-service: username in get request: ", req.user.username);
+
     const pins = await pinWithPolygonView.find({ username: user.username }).toArray();
+
+    debug("pin-service: received pins from database: ", pins);
+
     res.send(pins);
 });
-
-app.post("/region", async (req, res) => {
-
-    // takes in a lat and lng and returns a polygon that is the region around that point
-    // it also stores the polygon in the database so that it does not have to be fetched again
-    // it replaces the getPolygonAndName function (but uses it)
-
-    const { lat, lng } = req.body;
-    
-    // fetch the polygon outline from nominatim
-    const { polygon, polygonname } = await getPolygonAndName(lat, lng);
-    if (!polygon) {
-        res.status(400).send("Could not find polygon");
-        return;
-    }
-
-    // save the polygon outline to the database to not have to fetch it again if it is not already there
-    const existingPolygon = await polygonCollection.findOne({ polygonname });
-    if (!existingPolygon) {
-        await polygonCollection.insertOne({ polygonname, polygon });
-    }
-
-    res.send({ polygonname, polygon });
-
-});
-
 
 app.listen(port, () => console.log(`Example app listening on http://localhost:${port}`));
 
@@ -167,7 +152,7 @@ const getPolygonAndName = async (lat, lng) => {
     let maxZoom = 10;
     let minZoom = 5;
 
-    for (let tryIndex = 0; tryIndex < 10; tryIndex++) {
+    for (let tryIndex = 0; tryIndex < 5; tryIndex++) {
 
         // prepare the reverse geocoding request options
         let reverseRequestOptions = {
