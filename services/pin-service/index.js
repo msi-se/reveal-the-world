@@ -104,7 +104,7 @@ app.get("/", async (req, res) => {
 
     debug("pin-service: username in get request: ", req.user.username);
 
-    const pins = await pinWithPolygonView.find({ username: user.username }).toArray();
+    const pins = await pinWithPolygonView.find({ "username": req.user.username }).toArray();
 
     debug("pin-service: received pins from database: ", pins);
 
