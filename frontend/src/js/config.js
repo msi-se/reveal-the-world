@@ -3,7 +3,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const TENANT = import.meta.env.VITE_TENANT || 'default';
 const TENANT_CLIENT_ID = import.meta.env.VITE_TENANT_CLIENT_ID;
 
-const TENANT_LOGO = import.meta.env.VITE_TENANT_LOGO;
+const TENANT_LOGO = import.meta.env.VITE_TENANT_LOGO || '/default-logo.png';
 const TENANT_BACKGROUNDCOLOR = import.meta.env.VITE_TENANT_BACKGROUNDCOLOR;
 
 const PATH = TENANT == 'default' ? '' : `/${TENANT}`;

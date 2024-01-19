@@ -21,58 +21,22 @@ const pinCollection = database.collection("pin");
 const polygonCollection = database.collection("polygon");
 const heatRegionCollection = database.collection("heatRegion");
 
-// create a view that joins the pin and polygon collections
-await database.command({ drop: "pinWithPolygonView" });
-await database.command({
-    create: "pinWithPolygonView",
-    viewOn: "pin",
-    pipeline: [
-        {
-            $lookup: {
-                from: "polygon",
-                localField: "polygonname",
-                foreignField: "polygonname",
-                as: "polygondata",
-            },
-        },
-        {
-            $project: {
-                _id: 0,
-                id: 1,
-                username: 1,
-                longitude: 1,
-                latitude: 1,
-                name: 1,
-                description: 1,
-                date: 1,
-                companions: 1,
-                duration: 1,
-                budget: 1,
-                polygon: "$polygondata.polygon",
-                polygonname: 1,
-            },
-        },
-        {
-            $unwind: {
-                path: "$polygon",
-                preserveNullAndEmptyArrays: true,
-            },
-        },
-    ],
-});
-const pinWithPolygonView = database.collection("pinWithPolygonView");
-
 // start express server
 const app = express();
 const port = 3002;
 app.use(express.json());
 app.use(cookieParser());
 app.use(auth);
-
+const debug = (...args) => { console.log(...args); };
 
 app.post("/", async (req, res) => {
     let pin = req.body;
+
+    debug("pin-service: received pin: ", pin);
+
     pin.username = req.user.username;
+
+    debug("pin-service: username in request: ", req.user.username);
 
     const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
     if (!polygon) {
@@ -96,35 +60,25 @@ app.post("/", async (req, res) => {
 
 app.get("/", async (req, res) => {
     const user = req.user;
-    const pins = await pinWithPolygonView.find({ username: user.username }).toArray();
-    res.send(pins);
+
+    debug("pin-service: username in get request: ", req.user.username);
+
+    const pins = await pinCollection.find({ "username": req.user.username }).toArray();
+
+    // add the polygon outlines to the pins
+    const polygonnames = pins.map(pin => pin.polygonname);
+    const polygons = await polygonCollection.find({ polygonname: { $in: polygonnames } }).toArray();
+    const pinsWithPolygons = pins.map(pin => {
+        const polygon = polygons.find(polygon => polygon.polygonname === pin.polygonname);
+        if (!polygon) return pin;
+        pin.polygon = polygon.polygon;
+        return pin;
+    });
+
+    debug("pin-service: received pins from database: ", pinsWithPolygons);
+
+    res.send(pinsWithPolygons);
 });
-
-app.post("/region", async (req, res) => {
-
-    // takes in a lat and lng and returns a polygon that is the region around that point
-    // it also stores the polygon in the database so that it does not have to be fetched again
-    // it replaces the getPolygonAndName function (but uses it)
-
-    const { lat, lng } = req.body;
-    
-    // fetch the polygon outline from nominatim
-    const { polygon, polygonname } = await getPolygonAndName(lat, lng);
-    if (!polygon) {
-        res.status(400).send("Could not find polygon");
-        return;
-    }
-
-    // save the polygon outline to the database to not have to fetch it again if it is not already there
-    const existingPolygon = await polygonCollection.findOne({ polygonname });
-    if (!existingPolygon) {
-        await polygonCollection.insertOne({ polygonname, polygon });
-    }
-
-    res.send({ polygonname, polygon });
-
-});
-
 
 app.listen(port, () => console.log(`Example app listening on http://localhost:${port}`));
 
@@ -167,7 +121,7 @@ const getPolygonAndName = async (lat, lng) => {
     let maxZoom = 10;
     let minZoom = 5;
 
-    for (let tryIndex = 0; tryIndex < 10; tryIndex++) {
+    for (let tryIndex = 0; tryIndex < 5; tryIndex++) {
 
         // prepare the reverse geocoding request options
         let reverseRequestOptions = {

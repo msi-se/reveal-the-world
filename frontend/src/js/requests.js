@@ -49,6 +49,8 @@ export async function createPin(pin) {
                 "tenant": TENANT
             }
         });
+
+        console.log(response);
     
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, ${response.statusText}`);
         const createdPin = await response.json();
@@ -65,7 +67,7 @@ export async function createPin(pin) {
  */
 export async function getHeatmapData() {
     try {
-        const response = await fetch(`${BACKEND_URL}/heatmap`, {
+        const response = await fetch(`${BACKEND_URL}/heatmap/`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

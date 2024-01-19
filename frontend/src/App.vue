@@ -3,7 +3,7 @@
     <v-app-bar :elevation="16" :color="tenantBackgroundColor">
       <img
         alt="logo-black"
-        :src="`${TENANT_LOGO}`"
+        :src="TENANT_LOGO"
         width="200"
         class="d-inline-block align-top ml-2"
         style="cursor: pointer"
@@ -50,7 +50,7 @@ let username = computed(() => {
 
 let tenantBackgroundColor = ref(TENANT_BACKGROUNDCOLOR || '#ffffff')
 
-console.log('TENANT: ' + TENANT + ' PATH: ' + PATH, 'TENANT_BACKGROUNDCOLOR: ' + TENANT_BACKGROUNDCOLOR)
+console.log('TENANT: ' + TENANT + ' PATH: ' + PATH, 'TENANT_BACKGROUNDCOLOR: ' + TENANT_BACKGROUNDCOLOR, 'TENANT_LOGO: ' + TENANT_LOGO)
 
 console.log(document.cookie)
 </script>
