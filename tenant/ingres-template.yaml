@@ -1,0 +1,7 @@
+      - path: /()(%tenant%/.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: frontend-%tenant%
+            port:
+              number: %port%

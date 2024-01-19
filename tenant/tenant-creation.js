@@ -80,6 +80,16 @@ function createK8sFrontendYaml(tenant, applicationId, port, backgroundColor) {
     fs.writeFileSync(`../deployement/k8s/frontend-${tenant}.yaml`, frontendTenantYaml);
 }
 
+function appendTenantToIngress(tenant, port) {
+    let ingressYaml = fs.readFileSync('../deployement/k8s/ingress.yaml', 'utf8');
+    let ingresTemplateYaml = fs.readFileSync('./ingres-template.yaml', 'utf8');
+    const replacements = { "%tenant%": tenant, "%port%": port };
+    let ingresAppendTenantYaml = ingresTemplateYaml.replace(/%\w+%/g, function(all) {
+        return replacements[all] || all;
+    });
+    fs.writeFileSync('../deployement/k8s/ingress.yaml', ingressYaml + "\n" + ingresAppendTenantYaml);
+}
+
 async function main() {
     const tenant = prompt("Tenant name (key): ");
     const port = prompt("Port: ");
@@ -91,6 +101,7 @@ async function main() {
     console.log(`- Client Secret: ${clientSecret}`);
     console.log();
     createK8sFrontendYaml(tenant, applicationId, port, backgroundColor);
+    appendTenantToIngress(tenant, port);
 }
 
 main();
