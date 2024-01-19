@@ -19,8 +19,7 @@ services:
     depends_on:
       - mongo
     environment:
-      - default_clientSecret=super-secret-secret-that-should-be-regenerated-for-production
-      - adac_clientSecret=77871c4bf3e249b3ad9cdcd880ff37c1
+      - clientSecret=super-secret-secret-that-should-be-regenerated-for-production
       - appURL=http://localhost
       - fusionAuthURL=http://localhost:9011
       - internalFusionAuthURL=http://host.docker.internal:9011
@@ -44,7 +43,7 @@ services:
       - "5174:3000"
     environment:
       - VITE_TENANT=adac
-      - VITE_TENANT_CLIENT_ID=e9fdb985-9173-4e01-9d73-ac2d60d1dc8e
+      - VITE_TENANT_CLIENT_ID=ddde566b-3b30-4b52-9aed-0016d0deb906
       - VITE_TENANT_LOGO=/adac-logo.png
       - VITE_TENANT_BACKGROUNDCOLOR=#FFFF00
       - VITE_BACKEND_URL=http://localhost/api

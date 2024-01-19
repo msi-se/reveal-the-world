@@ -25,7 +25,7 @@ spec:
           - secretRef:
               name: appurl
           - secretRef:
-              name: defaultclientsecret
+              name: clientsecret
 ---
 apiVersion: v1
 kind: Service

@@ -52,3 +52,10 @@ spec:
             name: frontend
             port:
               number: 3000
+      - path: /()(adac/.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: frontend-adac
+            port:
+              number: 2000

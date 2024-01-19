@@ -124,7 +124,7 @@ Already actions secret:
 
 # K8S services (deploy from scratch)
 Already actions secret:
-  - default_clientSecret
+  - clientSecret
 
 - az aks get-credentials --resource-group $AKS_RESOURCE_GROUP_NAME --name $KUBERNETES_CLUSTER_NAME
 - kubectl get nodes
@@ -139,7 +139,7 @@ Already actions secret:
 - kubectl create secret generic internalfusionauthurl --from-literal=internalFusionAuthURL=$internalFusionAuthURL
 - kubectl create secret generic appurl --from-literal=appURL=$appURL
 - kubectl create secret generic vitebackendurl --from-literal=VITE_BACKEND_URL=$VITE_BACKEND_URL
-- kubectl create secret generic defaultclientsecret --from-literal=default_clientSecret=$default_clientSecret
+- kubectl create secret generic clientsecret --from-literal=clientSecret=$clientSecret
 
 - kubectl apply -f analytics.yaml
 - kubectl apply -f auth.yaml
