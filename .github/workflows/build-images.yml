@@ -61,6 +61,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ matrix.service }}:${{ env.VERSION }}
 
   apply-images-service:
+    needs: build-and-push-image
     runs-on: self-hosted
     strategy:
       fail-fast: false
@@ -84,6 +85,7 @@ jobs:
               - 'service/${{ matrix.service }}/version.txt'
 
       - name: Azure login
+        if: steps.changes.outputs.service == 'true'
         uses: azure/login@v1
         with:
           auth-type: IDENTITY
@@ -92,12 +94,14 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
       - name: Kubernetes deploy new images
+        if: steps.changes.outputs.service == 'true'
         working-directory: deployement/k8s
         run: |
           az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
           kubectl rollout restart deployment ${{ matrix.service }}
   
   apply-images-frontend:
+    needs: build-and-push-image
     runs-on: self-hosted
 
     permissions:
@@ -117,6 +121,7 @@ jobs:
               - 'frontend/version.txt'
 
       - name: Azure login
+        if: steps.changes.outputs.service == 'true'
         uses: azure/login@v1
         with:
           auth-type: IDENTITY
@@ -125,6 +130,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
       - name: Kubernetes deploy new images
+        if: steps.changes.outputs.service == 'true'
         working-directory: deployement/k8s
         run: |
           az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
