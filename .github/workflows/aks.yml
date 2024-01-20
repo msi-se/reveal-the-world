@@ -1,5 +1,11 @@
 name: Update AKS infrastucture
-on: [push]
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'deployement/aks-deployment/*'
 
 env:
   ARM_USE_MSI: true

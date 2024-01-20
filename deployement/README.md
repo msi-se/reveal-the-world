@@ -124,7 +124,7 @@ Already actions secret:
 - echo '{"encrypted_value":"'$APP_IP'","key_id":"'$public_key_id'"}' > body.json
 - curl -L -X PUT -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $ACCESS_TOKEN" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/$ORG_NAME/$REPO_NAME/actions/secrets/APP_IP -d @body.json
 
-# K8S fusionauth (deploy from scratch)
+# K8S fusionauth
 Already actions secret:
   - FUSIONAUTH_DATABASE_USERNAME
   - FUSIONAUTH_DATABASE_PASSWORD
@@ -141,9 +141,10 @@ Already actions secret:
 - kubectl apply -f fusionauth.yaml
 - FUSION_AUTH_PUBLIC_IP=$(kubectl get service fusionauth --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 - create github actions secrets
-- apply kicktstart
 
-# K8S services (deploy from scratch)
+- apply kicktstart if it 
+
+# K8S services
 Already actions secret:
   - clientSecret
 
