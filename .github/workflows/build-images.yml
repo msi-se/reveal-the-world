@@ -59,5 +59,73 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ matrix.service }}:latest
             ${{ env.REGISTRY }}/${{ matrix.service }}:${{ env.VERSION }}
-          # tags: ${{ steps.meta.outputs.tags }}
-          # labels: ${{ steps.meta.outputs.labels }}
+
+  apply-images-service:
+    runs-on: self-hosted
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth-service, analytics-service, heatmap-service, pin-service, update-service]
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Filter changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            service:
+              - 'service/${{ matrix.service }}/version.txt'
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          auth-type: IDENTITY
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - name: Kubernetes deploy new images
+        working-directory: deployement/k8s
+        run: |
+          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
+          kubectl rollout restart deployment ${{ matrix.service }}
+  
+  apply-images-frontend:
+    runs-on: self-hosted
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Filter changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            service:
+              - 'frontend/version.txt'
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          auth-type: IDENTITY
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - name: Kubernetes deploy new images
+        working-directory: deployement/k8s
+        run: |
+          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
+          ls | grep "frontend" | xargs -L 1 -d '\n' basename -s '.yaml' | xargs -L 1 -d '\n' kubectl rollout restart deployment
