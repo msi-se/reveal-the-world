@@ -1,5 +1,11 @@
 name: Update services
-on: [push]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'deployement/k8s/*'
+      - '!deployement/k8s/fusionauth.yaml'
 
 env:
   ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
@@ -7,7 +13,7 @@ env:
   REPO_NAME: ${{ secrets.REPO_NAME }}
 
 jobs:
-  build-and-deploy-fusionauth:
+  build-and-deploy-services:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
@@ -56,4 +62,3 @@ jobs:
         run: |
           az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
           ls | grep ".yaml$" | xargs -L 1 -d '\n' kubectl apply -f
-          

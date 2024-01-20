@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: analytics-service-deployment
+  name: analytics-service
 spec:
   replicas: 1
   selector:

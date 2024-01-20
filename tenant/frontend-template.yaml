@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-%tenant%-deployment
+  name: frontend-%tenant%
 spec:
   replicas: 1
   selector:
