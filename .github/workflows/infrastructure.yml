@@ -17,23 +17,33 @@ jobs:
 
       # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
       - name: Terraform
+        id: terraform
         working-directory: deployement/datastore-deployment
         run: |
           terraform init
           terraform plan -out datastore.tfplan
           terraform apply datastore.tfplan
-          MONGODB_URI=$(terraform output -raw cosmos_connection_string)
-          POSTGRESQL_FQDN=$(terraform output -raw posgresql_fqdn)
-          POSTGRESQL_ROOT_USERNAME=$(terraform output -raw posgresql_admin_username)
-          POSTGRESQL_ROOT_PASSWORD=$(terraform output -raw posgresql_admin_password)
-          REGISTRY_PASSWORD=$(terraform output -raw acr_token)
-          REGISTRY_USERNAME=$(terraform output -raw acr_token_name)
-          REGISTRY=$(terraform output -raw acr_server_name)
-          REGISTRY_ID=$(terraform output -raw acr_id)
-          
+          echo "MONGODB_URI=$(terraform output -raw cosmos_connection_string)" >> "$GITHUB_OUTPUT"
+          echo "POSTGRESQL_FQDN=$(terraform output -raw posgresql_fqdn)" >> "$GITHUB_OUTPUT"
+          echo "POSTGRESQL_ROOT_USERNAME=$(terraform output -raw posgresql_admin_username)" >> "$GITHUB_OUTPUT"
+          echo "POSTGRESQL_ROOT_PASSWORD=$(terraform output -raw posgresql_admin_password)" >> "$GITHUB_OUTPUT"
+          echo "REGISTRY_PASSWORD=$(terraform output -raw acr_token)" >> "$GITHUB_OUTPUT"
+          echo "REGISTRY_USERNAME=$(terraform output -raw acr_token_name)" >> "$GITHUB_OUTPUT"
+          echo "REGISTRY=$(terraform output -raw acr_server_name)" >> "$GITHUB_OUTPUT"
+          echo "REGISTRY_ID=$(terraform output -raw acr_id)" >> "$GITHUB_OUTPUT"
+
       - name: Update Github actions secrets
         working-directory: deployement
-        run: |  
+        env:
+          MONGODB_URI: ${{ steps.terraform.outputs.MONGODB_URI }}
+          POSTGRESQL_FQDN: ${{ steps.terraform.outputs.POSTGRESQL_FQDN }}
+          POSTGRESQL_ROOT_USERNAME: ${{ steps.terraform.outputs.POSTGRESQL_ROOT_USERNAME }}
+          POSTGRESQL_ROOT_PASSWORD: ${{ steps.terraform.outputs.POSTGRESQL_ROOT_PASSWORD }}
+          REGISTRY_PASSWORD: ${{ steps.terraform.outputs.REGISTRY_PASSWORD }}
+          REGISTRY_USERNAME: ${{ steps.terraform.outputs.REGISTRY_USERNAME }}
+          REGISTRY: ${{ steps.terraform.outputs.REGISTRY }}
+          REGISTRY_ID: ${{ steps.terraform.outputs.REGISTRY_ID }}
+        run: |
           keys=($MONGODB_URI $POSTGRESQL_FQDN $POSTGRESQL_ROOT_USERNAME $POSTGRESQL_ROOT_PASSWORD $REGISTRY_PASSWORD $REGISTRY_USERNAME $REGISTRY $REGISTRY_ID)
           echo $POSTGRESQL_FQDN
           public_key_info=$(curl -H "Authorization: token $ACCESS_TOKEN" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/$ORG_NAME/$REPO_NAME/actions/secrets/public-key)
@@ -42,4 +52,3 @@ jobs:
           MONGODB_URI=$(python3 encrypt-secret.py $MONGODB_URI $public_key_value)
           echo '{"encrypted_value":"'$MONGODB_URI'","key_id":"'$public_key_id'"}' > body.json
           curl -L -X PUT -H "Accept: application/vnd.github+json" -H "Authorization: Bearer $ACCESS_TOKEN" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/$ORG_NAME/$REPO_NAME/actions/secrets/MONGODB_URI -d @body.json
-
