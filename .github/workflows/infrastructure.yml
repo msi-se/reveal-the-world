@@ -1,4 +1,4 @@
-name: Run terraform init
+name: Update infrastucture
 on: [push]
 
 env:
@@ -6,6 +6,7 @@ env:
   ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
   ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
 jobs: 
   build-and-deploy-datastore:
@@ -29,8 +30,12 @@ jobs:
           REGISTRY_USERNAME=$(terraform output -raw acr_token_name)
           REGISTRY=$(terraform output -raw acr_server_name)
           REGISTRY_ID=$(terraform output -raw acr_id)
+          
+      - name: Update Github actions secrets
+        working-directory: deployement
+        run: |  
           keys=($MONGODB_URI $POSTGRESQL_FQDN $POSTGRESQL_ROOT_USERNAME $POSTGRESQL_ROOT_PASSWORD $REGISTRY_PASSWORD $REGISTRY_USERNAME $REGISTRY $REGISTRY_ID)
-          cd ..
+          echo $POSTGRESQL_FQDN
           public_key_info=$(curl -H "Authorization: token $ACCESS_TOKEN" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/$ORG_NAME/$REPO_NAME/actions/secrets/public-key)
           public_key_value=$(echo "$public_key_info" | jq -r '.key')
           public_key_id=$(echo "$public_key_info" | jq -r '.key_id')
