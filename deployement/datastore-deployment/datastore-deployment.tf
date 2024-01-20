@@ -139,6 +139,10 @@ resource "azurerm_cosmosdb_mongo_collection" "analytics" {
     keys   = ["_id"]
     unique = true
   }
+  index {
+    keys   = ["timestamp"]
+    unique = true
+  }
 }
 
 # Posgresql
