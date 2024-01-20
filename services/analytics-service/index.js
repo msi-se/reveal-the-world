@@ -24,13 +24,14 @@ const app = express();
 const port = 3004;
 app.use(express.json());
 app.use(cookieParser());
-app.use(auth);
+// app.use(auth);
 
 // define routes
-app.get("/", async (req, res) => {
+app.get("/:tenant", async (req, res) => {
+    const tenant = req.params.tenant;
 
     // get the analytics state
-    const analyticsState = await analyticsStateCollection.find({}).sort({ timestamp: -1 }).limit(1).next();
+    const analyticsState = await analyticsStateCollection.find({ tenant: tenant }).sort({ timestamp: -1 }).limit(1).next();
     if (!analyticsState) {
         res.status(400).send("No analytics state found");
         return;
@@ -42,5 +43,5 @@ app.get("/", async (req, res) => {
 
 // start the server
 app.listen(port, () => {
-    console.log(`Heatmap service listening at http://localhost:${port}`);
+    console.log(`Analytics service listening at http://localhost:${port}`);
 });
