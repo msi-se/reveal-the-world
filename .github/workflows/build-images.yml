@@ -82,7 +82,7 @@ jobs:
         with:
           filters: |
             service:
-              - 'service/${{ matrix.service }}/version.txt'
+              - 'services/${{ matrix.service }}/version.txt'
 
       - name: Azure login
         if: steps.changes.outputs.service == 'true'
