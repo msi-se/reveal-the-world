@@ -55,6 +55,7 @@ jobs:
         id: terraform
         working-directory: deployement/aks-deployment
         run: |
+          echo -n ${{ secrets.REGISTRY_ID }} > ./registry_id.txt 
           terraform init
           terraform plan -out aks.tfplan
           
