@@ -39,8 +39,7 @@ jobs:
           keys["AKS_RESOURCE_GROUP_NAME"]=$(terraform output -raw resource_group_name)
           keys["AKS_RESOURCE_GROUP_LOCATION"]=$(terraform output -raw resource_group_location)
           public_ip_resource_group_name=MC_${keys["AKS_RESOURCE_GROUP_NAME"]}_${keys["KUBERNETES_CLUSTER_NAME"]}_${keys["AKS_RESOURCE_GROUP_LOCATION"]}
-          keys["APP_IP"]=$(az network public-ip list --resource-group $public_ip_resource_group_name --query '[0].ipAddress' --output tsv)
-          az aks get-credentials --resource-group ${keys["AKS_RESOURCE_GROUP_NAME"]} --name ${keys["KUBERNETES_CLUSTER_NAME"}
+          az aks get-credentials --resource-group ${keys["AKS_RESOURCE_GROUP_NAME"]} --name ${keys["KUBERNETES_CLUSTER_NAME"]}
           kubectl get nodes
           
           cd ..
