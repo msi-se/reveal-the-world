@@ -9,7 +9,7 @@ const appUrl = process.env.APP_URL || 'http://localhost';
 const FA_URL = process.env.FA_URL || 'http://localhost:9011';
 const FA_API_KEY = process.env.FA_API_KEY || '33052c8a-c283-4e96-9d2a-eb1215c69f8f-not-for-prod';
 const client = new FusionAuthClient(FA_API_KEY, FA_URL);
-const clientSecret = process.env.clientSecret || "super-secret-secret-that-should-be-regenerated-for-production";
+const clientSecret = process.env.CLIENT_SECRET || "super-secret-secret-that-should-be-regenerated-for-production";
 
 async function deleteTenant(tenantName) {
     try {
