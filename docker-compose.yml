@@ -43,7 +43,7 @@ services:
       - "5174:3000"
     environment:
       - VITE_TENANT=adac
-      - VITE_TENANT_CLIENT_ID=ddde566b-3b30-4b52-9aed-0016d0deb906
+      - VITE_TENANT_CLIENT_ID=94c28eba-0d7c-4acb-844a-9d5259a34652
       - VITE_TENANT_LOGO=/adac-logo.png
       - VITE_TENANT_BACKGROUNDCOLOR=#FFFF00
       - VITE_BACKEND_URL=http://localhost/api
