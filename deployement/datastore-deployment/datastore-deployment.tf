@@ -114,7 +114,6 @@ resource "azurerm_cosmosdb_mongo_collection" "heatRegionState" {
   }
   index {
     keys   = ["timestamp"]
-    unique = true
   }
 }
 
@@ -141,7 +140,6 @@ resource "azurerm_cosmosdb_mongo_collection" "analytics" {
   }
   index {
     keys   = ["timestamp"]
-    unique = true
   }
 }
 
