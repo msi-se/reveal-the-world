@@ -6,10 +6,19 @@ output "acr_token" {
   value = azurerm_container_registry_token_password.rtwcr1-token-password.password1[0].value
   sensitive = true
 }
+output "acr_token_name" {
+  value = azurerm_container_registry_token.rtwcr1-token.name
+  sensitive = true
+}
 output "acr_id" {
   value = azurerm_container_registry.cr1.id
   sensitive = true
 }
+output "acr_server_name" {
+  value = azurerm_container_registry.cr1.login_server
+  sensitive = true
+}
+
 
 # Cosmos DB
 output "cosmos_connection_string" {
