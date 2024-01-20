@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-%tenant%-deployment
+  name: frontend-adac-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend-%tenant%
+      app: frontend-adac
   template:
     metadata:
       labels:
-        app: frontend-%tenant%
+        app: frontend-adac
     spec:
       containers:
-      - name: frontend-%tenant%
+      - name: frontend-adac
         image: rtwcr1.azurecr.io/frontend
         ports:
         - containerPort: 3000
@@ -22,21 +22,21 @@ spec:
               name: vitebackendurl
         env:
           - name: VITE_TENANT
-            value: %tenant%
+            value: adac
           - name: VITE_TENANT_CLIENT_ID
-            value: %applicationId%
+            value: 8038c50d-f338-49c0-8ea3-7bdf2965677e
           - name: VITE_TENANT_BACKGROUNDCOLOR
-            value: "%backgroundColor%"
+            value: "#FFFF00"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-%tenant%
+  name: frontend-adac
 spec:
   type: ClusterIP
   ports:
   - name: http
-    port: %port%
+    port: 4000
     targetPort: 3000
   selector:
-    app: frontend-%tenant%
+    app: frontend-adac

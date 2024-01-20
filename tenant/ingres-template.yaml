@@ -1,4 +1,4 @@
-      - path: /()(%tenant%/.*)
+      - path: /%tenant%(/|$)(.*)
         pathType: ImplementationSpecific
         backend:
           service:

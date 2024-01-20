@@ -22,7 +22,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Kubernetes secrets
+      - name: Kubernetes secrets creation
         continue-on-error: true
         working-directory: deployement/k8s
         run: |

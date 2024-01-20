@@ -142,8 +142,6 @@ Already actions secret:
 - FUSION_AUTH_PUBLIC_IP=$(kubectl get service fusionauth --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 - create github actions secrets
 
-- apply kicktstart if it 
-
 # K8S services
 Already actions secret:
   - clientSecret
@@ -163,6 +161,12 @@ Already actions secret:
 - kubectl create secret generic appurl --from-literal=appURL=$appURL
 - kubectl create secret generic vitebackendurl --from-literal=VITE_BACKEND_URL=$VITE_BACKEND_URL
 - kubectl create secret generic clientsecret --from-literal=clientSecret=$clientSecret
+- helm install ingress-nginx ingress-nginx/ingress-nginx \
+    --set controller.replicaCount=1 \
+    --set controller.nodeSelector."kubernetes\.io/os"=linux \
+    --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
+    --set controller.service.externalTrafficPolicy=Local \
+    --set controller.service.loadBalancerIP=$APP_IP
 
 - kubectl apply -f analytics.yaml
 - kubectl apply -f auth.yaml
@@ -170,49 +174,7 @@ Already actions secret:
 - kubectl apply -f heatmap.yaml
 - kubectl apply -f pin.yaml
 - kubectl apply -f update.yaml
-
-- helm install ingress-nginx ingress-nginx/ingress-nginx \
-    --set controller.replicaCount=1 \
-    --set controller.nodeSelector."kubernetes\.io/os"=linux \
-    --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
-    --set controller.service.externalTrafficPolicy=Local \
-    --set controller.service.loadBalancerIP=$APP_IP
-- kubectl get service --namespace default ingress-nginx-controller --output wide
 - kubectl apply -f ingress.yaml
 
-# K8S services update after image only (execpt ingress and fusionauth)
-- az login
-- az aks get-credentials --resource-group $AKS_RESOURCE_GROUP_NAME --name $KUBERNETES_CLUSTER_NAME
-- kubectl get nodes
-
-- fusionAuthURL=http://${FUSION_AUTH_PUBLIC_IP}:9011
-- internalFusionAuthURL=http://${FUSION_AUTH_PUBLIC_IP}:9011
-- appURL=http://${APP_IP}
-- VITE_BACKEND_URL=http://${APP_IP}/api
-
-- kubectl create secret generic mongodburi --from-literal=MONGODB_URI=$MONGODB_URI
-- kubectl create secret generic fusionauthurl --from-literal=fusionAuthURL=$fusionAuthURL
-- kubectl create secret generic internalfusionauthurl --from-literal=internalFusionAuthURL=$internalFusionAuthURL
-- kubectl create secret generic appurl --from-literal=appURL=$appURL
-- kubectl create secret generic vitebackendurl --from-literal=VITE_BACKEND_URL=$VITE_BACKEND_URL
-
-- kubectl rollout restart deploy servicename
-
-# K8S services update after K8S yaml file update (execpt ingress and fusionauth)
-- az login
-- az aks get-credentials --resource-group $AKS_RESOURCE_GROUP_NAME --name $KUBERNETES_CLUSTER_NAME
-- kubectl get nodes
-
-- fusionAuthURL=http://${FUSION_AUTH_PUBLIC_IP}:9011
-- internalFusionAuthURL=http://${FUSION_AUTH_PUBLIC_IP}:9011
-- appURL=http://${APP_IP}
-- VITE_BACKEND_URL=http://${APP_IP}/api
-
-- kubectl create secret generic mongodburi --from-literal=MONGODB_URI=$MONGODB_URI
-- kubectl create secret generic fusionauthurl --from-literal=fusionAuthURL=$fusionAuthURL
-- kubectl create secret generic internalfusionauthurl --from-literal=internalFusionAuthURL=$internalFusionAuthURL
-- kubectl create secret generic appurl --from-literal=appURL=$appURL
-- kubectl create secret generic vitebackendurl --from-literal=VITE_BACKEND_URL=$VITE_BACKEND_URL
-
-- kubectl apply -f <filename>.yaml
+- 
 
