@@ -22,7 +22,8 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Kubernetes
+      - name: Kubernetes secrets
+        continue-on-error: true
         working-directory: deployement/k8s
         run: |
           az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
@@ -33,6 +34,12 @@ jobs:
           kubectl create secret generic posgresqlrootpassword --from-literal=DATABASE_ROOT_PASSWORD=${{ secrets.POSTGRESQL_ROOT_PASSWORD }}
           kubectl create secret generic fusionauthdatabaseusername --from-literal=DATABASE_USERNAME=${{ secrets.FUSIONAUTH_DATABASE_USERNAME }}
           kubectl create secret generic fusionauthdatabasepassword --from-literal=DATABASE_PASSWORD=${{ secrets.FUSIONAUTH_DATABASE_PASSWORD }}
+      
+      - name: Kubernetes deploy
+        continue-on-error: true
+        working-directory: deployement/k8s
+        run: |
+          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
           kubectl apply -f fusionauth.yaml
           FUSION_AUTH_PUBLIC_IP=$(kubectl get service fusionauth --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
           cd ..
