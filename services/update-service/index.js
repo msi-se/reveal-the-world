@@ -32,7 +32,11 @@ app.use(cookieParser());
 
 // define routes
 app.get("/", (req, res) => {
-    res.status(200).send("Update service is running");
+
+    // send response and continue with the update (async)
+    res.status(200).send("Update started (GET - only temporary)");
+
+    update();
 });
 
 app.post("/", async (req, res) => {
@@ -40,6 +44,15 @@ app.post("/", async (req, res) => {
     // send response and continue with the update (async)
     res.status(200).send("Update started");
 
+    update();
+});
+
+// start the server
+app.listen(port, () => {
+    console.log(`Update service listening at http://localhost:${port}`);
+});
+
+async function update() {
     // get all pins
     const pins = await pinCollection.find({}).toArray();
 
@@ -48,27 +61,37 @@ app.post("/", async (req, res) => {
     for (let i = 0; i < pins.length; i++) {
         const pin = pins[i];
         const polygonname = pin.polygonname;
-        const polygon = await polygonCollection.findOne({ polygonname: polygonname });
-        if (polygon) {
-            const index = heatRegions.findIndex((heatRegion) => heatRegion.polygonname === polygonname);
-            if (index === -1) {
-                heatRegions.push({ polygonname: polygonname, density: 1, count: 1 });
-            } else {
-                heatRegions[index].count++;
-            }
+        // const polygon = await polygonCollection.findOne({ polygonname: polygonname });
+        // if (polygon) {
+        const index = heatRegions.findIndex((heatRegion) => heatRegion.polygonname === polygonname);
+        if (index === -1) {
+            heatRegions.push({ polygonname: polygonname, density: 1, count: 1 });
+        } else {
+            heatRegions[index].count++;
         }
+        // }
     };
 
-    // calculate the density for each region
-    const maxDensity = heatRegions.reduce((max, heatRegion) => Math.max(max, heatRegion.count), 0);
+    // check if there are heat regions without a polygon -> if so, remove them
+    const polygons = await polygonCollection.find({ polygonname: { $in: heatRegions.map((heatRegion) => heatRegion.polygonname) } }).toArray();
+    const heatRegionsWithPolygon = [];
     heatRegions.forEach((heatRegion) => {
+        const polygon = polygons.find((polygon) => polygon.polygonname === heatRegion.polygonname);
+        if (polygon) {
+            heatRegionsWithPolygon.push(heatRegion);
+        }
+    });
+
+    // calculate the density for each region
+    const maxDensity = heatRegionsWithPolygon.reduce((max, heatRegion) => Math.max(max, heatRegion.count), 0);
+    heatRegionsWithPolygon.forEach((heatRegion) => {
         heatRegion.density = heatRegion.count / maxDensity;
     });
 
     // save the heat regions
     const heatRegionState = {
         timestamp: new Date().toISOString(),
-        heatRegions: heatRegions,
+        heatRegions: heatRegionsWithPolygon,
     };
     await heatRegionStateCollection.insertOne(heatRegionState);
 
@@ -121,9 +144,4 @@ app.post("/", async (req, res) => {
     };
     await analyticsStateCollection.insertOne(analyticsState);
 
-});
-
-// start the server
-app.listen(port, () => {
-    console.log(`Update service listening at http://localhost:${port}`);
-});
+}
