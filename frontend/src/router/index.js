@@ -28,7 +28,7 @@ const router = createRouter({
       path: `/heatmap`,
       name: 'heatmap',
       component: () => import('../views/HeatmapView.vue'),
-      beforeEnter: routeGuard(`/`)
+      // beforeEnter: routeGuard(`/`)
     }
   ]
 })

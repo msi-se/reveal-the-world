@@ -1,4 +1,5 @@
 <template>
+  <LoadingIndicator v-if="isLoading" />
   <div style="height: 90vh; width: 100vw">
     <l-map
       :center="[47.41322, -1.219482]"
@@ -33,12 +34,14 @@
 import { LMap, LTileLayer, LControlLayers, LRectangle, LPolygon } from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
 import * as requests from '../js/requests.js'
+import LoadingIndicator from '../components/LoadingIndicator.vue'
 
 export default {
   components: {
     LMap,
     LTileLayer,
-    LPolygon
+    LPolygon,
+    LoadingIndicator
   },
   data() {
     return {
@@ -48,12 +51,15 @@ export default {
       },
       /** @type {Array<{key: string, latlngs: number[][], color: string , opacity: number}>} */
       polygons: [],
-      clickedOnPolygon: false
+      clickedOnPolygon: false,
+      isLoading: true
     }
   },
   computed: {},
   methods: {
     async loadHeatRegions() {
+
+      this.isLoading = true
       const getDesityColorForFloat = (float) => {
         let h = (1.0 - float) * 240
         return 'hsl(' + h + ', 100%, 50%)'
@@ -81,6 +87,8 @@ export default {
       }
 
       console.table(this.polygons)
+
+      this.isLoading = false
     }
   },
   async mounted() {

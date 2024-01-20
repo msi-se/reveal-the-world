@@ -1,5 +1,6 @@
 <template>
   <DataInputDialog v-if="clickedOnMap" @save="saveData" @cancel="cancelData" />
+  <LoadingIndicator v-if="isLoading" />
   <div style="height: 90vh; width: 100vw">
     <l-map
       :center="[47.41322, -1.219482]"
@@ -43,6 +44,7 @@
 import { LMap, LTileLayer, LControlLayers, LRectangle, LPolygon } from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
 import DataInputDialog from '../components/DataInputDialog.vue'
+import LoadingIndicator from '../components/LoadingIndicator.vue'
 import { getOutlineForLatLng, getRandomPastelColor } from '../js/helpers.js'
 import { getPolygonAndName } from '../js/helpers-new.js'
 import * as requests from '../js/requests.js'
@@ -53,7 +55,8 @@ export default {
     LMap,
     LTileLayer,
     LPolygon,
-    DataInputDialog
+    DataInputDialog,
+    LoadingIndicator
   },
   data() {
     return {
@@ -66,7 +69,8 @@ export default {
         minZoom: 1
       },
       clickedOnMap: false,
-      selectedCoords: { lat: 0, lng: 0 }
+      selectedCoords: { lat: 0, lng: 0 },
+      isLoading: true
     }
   },
   computed: {
@@ -104,6 +108,9 @@ export default {
     async saveData(data) {
       console.log('saveData', data)
 
+      this.clickedOnMap = false
+      this.isLoading = true
+
       const { lat, lng } = this.selectedCoords
       const saveResponse = await requests.createPin({
         name: data.name,
@@ -135,7 +142,8 @@ export default {
           polygonname: saveResponse.polygonname
         })
       }
-      this.clickedOnMap = false
+
+      this.isLoading = false
     },
     /**
      * Cancels the DataInputDialog
@@ -144,6 +152,8 @@ export default {
       this.clickedOnMap = false
     },
     async updatePinsAndPolygons() {
+
+      this.isLoading = true
       this.markers = []
       this.polygons = []
 
@@ -173,6 +183,7 @@ export default {
           })
         }
       }
+      this.isLoading = false
     }
   },
   async mounted() {

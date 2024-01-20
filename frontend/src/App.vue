@@ -10,7 +10,7 @@
       />
       <a :href="`${PATH}/`" style="text-decoration: none; color: inherit">
         <div class="mr-15 ml-4 app-bar-title" style="cursor: pointer">
-          {{ TENANT }}
+          {{ TENANT === 'default' ? '' : TENANT }}
         </div>
       </a>
       <v-spacer></v-spacer>
