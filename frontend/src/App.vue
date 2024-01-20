@@ -15,14 +15,20 @@
       </a>
       <v-spacer></v-spacer>
       <a :href="`${PATH}/pin`">
-        <v-btn class="mr-2"> My Travel Records </v-btn>
+        <v-btn class="mr-2"> My Pins </v-btn>
       </a>
       <a :href="`${PATH}/heatmap`">
         <v-btn class="mr-2"> Heatmap </v-btn>
       </a>
       <!-- display login state -->
       <div v-if="isLoggedIn" class="mr-2">
-        <p>Logged in as {{ username }}</p>
+        <p>{{ username }}</p>
+      </div>
+      <div v-if="isLoggedIn">
+        <v-btn @click="logout" class="mr-2"> Logout </v-btn>
+      </div>
+      <div v-else>
+        <v-btn @click="login" class="mr-2"> Login </v-btn>
       </div>
     </v-app-bar>
     <v-main>
