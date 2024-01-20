@@ -34,7 +34,7 @@ app.post("/", async (req, res) => {
         description: req.body.description,
         latitude: req.body.latitude,
         longitude: req.body.longitude,
-        date: req.body.date,
+        date: req.body.date || new Date().toISOString(),
         companions: req.body.companions,
         duration: req.body.duration,
         rating: req.body.rating,
