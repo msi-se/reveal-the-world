@@ -1,8 +1,11 @@
 const uuid = require('uuid');
 const { FusionAuthClient } = require('@fusionauth/node-client');
+const prompt = require('prompt-sync')();
+const fs = require('fs');
 
 const appUrl = 'http://localhost';
 const client = new FusionAuthClient('33052c8a-c283-4e96-9d2a-eb1215c69f8f-not-for-prod', 'http://localhost:9011');
+const clientSecret = "super-secret-secret-that-should-be-regenerated-for-production";
 
 async function deleteTenant(tenantName) {
     try {
@@ -33,7 +36,6 @@ async function create(tenantName) {
         client.tenantId = tenantId;
 
         let applicationId = uuid.v4();
-        let clientSecret = uuid.v4().replace(/-/g, '');
         await client.createApplication(applicationId, {
             "application": {
                 "name": `${tenantName}-app`,
@@ -62,19 +64,43 @@ async function create(tenantName) {
                 },
             }
         });
-        return {tenantId, applicationId, clientSecret};
+        return { tenantId, applicationId };
     } catch (e) {
         console.log(e);
     }
 }
 
+function createK8sFrontendYaml(tenant, applicationId, port, backgroundColor) {
+    let frontendYaml = fs.readFileSync('./frontend-template.yaml', 'utf8');
+    const replacements = { "%tenant%": tenant, "%applicationId%": applicationId, "%port%": port, "%backgroundColor%": backgroundColor };
+    let frontendTenantYaml = frontendYaml.replace(/%\w+%/g, function(all) {
+        return replacements[all] || all;
+    });
+    // TODO: deployement typo
+    fs.writeFileSync(`../deployement/k8s/frontend-${tenant}.yaml`, frontendTenantYaml);
+}
+
+function appendTenantToIngress(tenant, port) {
+    let ingressYaml = fs.readFileSync('../deployement/k8s/ingress.yaml', 'utf8');
+    let ingresTemplateYaml = fs.readFileSync('./ingres-template.yaml', 'utf8');
+    const replacements = { "%tenant%": tenant, "%port%": port };
+    let ingresAppendTenantYaml = ingresTemplateYaml.replace(/%\w+%/g, function(all) {
+        return replacements[all] || all;
+    });
+    fs.writeFileSync('../deployement/k8s/ingress.yaml', ingressYaml + "\n" + ingresAppendTenantYaml);
+}
+
 async function main() {
-    const tenantName = "adac";
-    const {tenantId, applicationId, clientSecret} = await create(tenantName);
-    console.log(`Created tenant ${tenantName}`);
+    const tenant = prompt("Tenant name (key): ");
+    const port = prompt("Port: ");
+    const backgroundColor = "#" + prompt("Background-Color: #");
+    const { tenantId, applicationId } = await create(tenant);
+    console.log(`Created tenant ${tenant}`);
     console.log(`- Tenant ID: ${tenantId}`);
     console.log(`- Application ID: ${applicationId}`);
-    console.log(`- Client Secret: ${clientSecret}`);
+    console.log();
+    createK8sFrontendYaml(tenant, applicationId, port, backgroundColor);
+    appendTenantToIngress(tenant, port);
 }
 
 main();

@@ -12,6 +12,10 @@ dotenv.config();
 const app = express();
 const port = 1337; // default port to listen
 
+if (!process.env.clientSecret) {
+  console.error('Missing clientSecret from .env');
+  process.exit();
+}
 if (!process.env.fusionAuthURL) {
   console.error('Missing fusionAuthURL from .env');
   process.exit();
@@ -24,6 +28,7 @@ if (!process.env.appURL) {
   console.error('Missing appURL from .env');
   process.exit();
 }
+const clientSecret = process.env.clientSecret;
 const appURL = process.env.appURL;
 const fusionAuthURL = process.env.fusionAuthURL;
 const internalFusionAuthURL = process.env.internalFusionAuthURL;
@@ -116,13 +121,6 @@ app.get('/oauth-redirect', async (req, res, next) => {
     return;
   }
 
-  const clientSecret = process.env[`${tenant}_clientSecret`];
-  if (!clientSecret) {
-    console.error(`Missing ${tenant}_clientSecret from .env`);
-    res.redirect(302, tenantToPath(tenant));
-    return;
-  }
-  
   try {
     console.log(authCode, clientId, clientSecret, userSessionCookie.verifier);
     // Exchange Auth Code and Verifier for Access Token

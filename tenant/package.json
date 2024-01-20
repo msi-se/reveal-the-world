@@ -1,15 +1,16 @@
 {
-  "name": "fusionauth",
+  "name": "tenant",
   "version": "1.0.0",
   "description": "",
-  "main": "fa-tenant-creation.js",
+  "main": "tenant-creation.js",
   "scripts": {
-    "start": "node fa-tenant-creation.js"
+    "start": "node tenant-creation.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@fusionauth/node-client": "^1.48.0",
+    "prompt-sync": "^4.2.0",
     "uuid": "^9.0.1"
   }
 }
