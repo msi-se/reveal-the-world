@@ -2,10 +2,14 @@ const uuid = require('uuid');
 const { FusionAuthClient } = require('@fusionauth/node-client');
 const prompt = require('prompt-sync')();
 const fs = require('fs');
+require('dotenv').config()
 
-const appUrl = 'http://localhost';
-const client = new FusionAuthClient('33052c8a-c283-4e96-9d2a-eb1215c69f8f-not-for-prod', 'http://localhost:9011');
-const clientSecret = "super-secret-secret-that-should-be-regenerated-for-production";
+
+const appUrl = process.env.APP_URL || 'http://localhost';
+const FA_URL = process.env.FA_URL || 'http://localhost:9011';
+const FA_API_KEY = process.env.FA_API_KEY || '33052c8a-c283-4e96-9d2a-eb1215c69f8f-not-for-prod';
+const client = new FusionAuthClient(FA_API_KEY, FA_URL);
+const clientSecret = process.env.clientSecret || "super-secret-secret-that-should-be-regenerated-for-production";
 
 async function deleteTenant(tenantName) {
     try {
@@ -91,9 +95,13 @@ function appendTenantToIngress(tenant, port) {
 }
 
 async function main() {
-    const tenant = prompt("Tenant name (key): ");
+    const tenant = prompt("Tenant: ");
     const port = prompt("Port: ");
     const backgroundColor = "#" + prompt("Background-Color: #");
+    if (!tenant || !port || !backgroundColor) {
+        console.log("Tenant, port and background-color are required");
+        return;
+    }
     const { tenantId, applicationId } = await create(tenant);
     console.log(`Created tenant ${tenant}`);
     console.log(`- Tenant ID: ${tenantId}`);
