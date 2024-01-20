@@ -14,7 +14,7 @@
             <v-img
                 alt="demo"
                 :src="`/demo.png`"
-                width="100%"
+                width="50em"
             />
 
         </div>
