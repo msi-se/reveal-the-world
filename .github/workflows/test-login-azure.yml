@@ -1,4 +1,4 @@
-name: Run Azure Login with OIDC
+name: Run Azure Login with OIDC - I hope
 on: push
 permissions:
       id-token: write
