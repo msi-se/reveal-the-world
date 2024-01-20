@@ -1,22 +1,18 @@
-name: Run Azure Login with OIDC
-on: 
-  push:  
-    branches: [deployment-to-cloud]
-permissions:
-      id-token: write
-      contents: read
+name: Run Azure Login with User-assigned Managed Identity
+on: [push]
+
 jobs: 
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Azure login
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          auth-type: IDENTITY
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}          
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          auth-type: IDENTITY
-  
+
       - name: Azure CLI script
         uses: azure/CLI@v1
         with:
