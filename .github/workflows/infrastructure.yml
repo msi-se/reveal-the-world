@@ -29,7 +29,7 @@ jobs:
           REGISTRY_USERNAME=$(terraform output -raw acr_token_name)
           REGISTRY=$(terraform output -raw acr_server_name)
           REGISTRY_ID=$(terraform output -raw acr_id)
-          keys=("REGISTRY" "POSTGRESQL_FQDN")
+          keys=("${REGISTRY}" "${POSTGRESQL_FQDN}")
           for item in "${keys[@]}"; do
             echo $item
           done
