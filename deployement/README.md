@@ -23,7 +23,6 @@ https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resour
 
 # FOR DEPLOYING DATASTORE
 Already actions secret:
-  - ARM_ACCESS_KEY (necessary for terraform)
   - AZURE_CLIENT_ID: the service principal client ID or user-assigned managed identity client ID
   - AZURE_SUBSCRIPTION_ID: the subscription ID
   - AZURE_TENANT_ID: the tenant ID
@@ -31,7 +30,6 @@ Already actions secret:
   - ORG_NAME
   - REPO_NAME
 
-- az login
 - terraform init
 - terraform plan -out datastore.tfplan
 - terraform apply datastore.tfplan
@@ -90,11 +88,6 @@ Already actions secret:
 
 
 # FOR DEPLOYING AKS
-Already actions secret:
-  - ARM_ACCESS_KEY (necessary for terraform)
-
-- az login
-
 - echo -n $REGISTRY_ID > ./registry_id.txt 
 - terraform init
 - terraform plan -out aks.tfplan

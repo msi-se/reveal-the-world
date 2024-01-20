@@ -16,6 +16,7 @@ resource "azurerm_container_registry_scope_map" "rtwcr1-scope-map-push" {
   resource_group_name     = azurerm_resource_group.rgdata.name
   actions = [
     "repositories/*/content/write",
+    "repositories/*/content/read",
     "repositories/*/metadata/write"
   ]
 }
