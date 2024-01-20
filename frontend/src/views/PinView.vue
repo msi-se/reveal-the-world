@@ -105,19 +105,16 @@ export default {
       console.log('saveData', data)
 
       const { lat, lng } = this.selectedCoords
-      const saveResponse = await requests.createPin(
-        {
-          name: data.name,
-          description: data.description,
-          date: data.date,
-          companions: data.companions,
-          duration: data.duration,
-          budget: data.budget,
-          latitude: lat,
-          longitude: lng
-        },
-        this.token
-      )
+      const saveResponse = await requests.createPin({
+        name: data.name,
+        description: data.description,
+        date: data.date,
+        companions: data.companions,
+        duration: data.duration,
+        budget: data.budget,
+        latitude: lat,
+        longitude: lng
+      })
 
       // add the marker
       this.markers.push({
@@ -128,12 +125,16 @@ export default {
       // add also the polygon (returned by the post request)
       console.log('saveResponse', saveResponse)
       let polygonLatlngs = saveResponse.polygon
-      this.polygons.push({
-        key: this.polygons.length + 1,
-        latlngs: polygonLatlngs,
-        color: getRandomPastelColor(),
-        polygonname: saveResponse.polygonname
-      })
+
+      // only add the polygon if does not exist yet
+      if (!this.polygons.find((polygon) => polygon.polygonname === saveResponse.polygonname)) {
+        this.polygons.push({
+          key: this.polygons.length + 1,
+          latlngs: polygonLatlngs,
+          color: getRandomPastelColor(),
+          polygonname: saveResponse.polygonname
+        })
+      }
       this.clickedOnMap = false
     },
     /**
@@ -161,12 +162,16 @@ export default {
       for (let i = 0; i < pins.length; i++) {
         const pin = pins[i]
         const polygonLatlngs = pin.polygon
-        this.polygons.push({
-          key: this.polygons.length + 1,
-          latlngs: polygonLatlngs,
-          color: getRandomPastelColor(),
-          polygonname: pin.polygonname
-        })
+
+        // only add the polygon if does not exist yet
+        if (!this.polygons.find((polygon) => polygon.polygonname === pin.polygonname)) {
+          this.polygons.push({
+            key: this.polygons.length + 1,
+            latlngs: polygonLatlngs,
+            color: getRandomPastelColor(),
+            polygonname: pin.polygonname
+          })
+        }
       }
     }
   },
