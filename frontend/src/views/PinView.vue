@@ -1,5 +1,6 @@
 <template>
   <DataInputDialog v-if="clickedOnMap" @save="saveData" @cancel="cancelData" />
+  <LoadingIndicator v-if="isLoading" />
   <div style="height: 90vh; width: 100vw">
     <l-map
       :center="[47.41322, -1.219482]"
@@ -43,6 +44,7 @@
 import { LMap, LTileLayer, LControlLayers, LRectangle, LPolygon } from '@vue-leaflet/vue-leaflet'
 import 'leaflet/dist/leaflet.css'
 import DataInputDialog from '../components/DataInputDialog.vue'
+import LoadingIndicator from '../components/LoadingIndicator.vue'
 import { getOutlineForLatLng, getRandomPastelColor } from '../js/helpers.js'
 import { getPolygonAndName } from '../js/helpers-new.js'
 import * as requests from '../js/requests.js'
@@ -53,7 +55,8 @@ export default {
     LMap,
     LTileLayer,
     LPolygon,
-    DataInputDialog
+    DataInputDialog,
+    LoadingIndicator
   },
   data() {
     return {
@@ -66,7 +69,8 @@ export default {
         minZoom: 1
       },
       clickedOnMap: false,
-      selectedCoords: { lat: 0, lng: 0 }
+      selectedCoords: { lat: 0, lng: 0 },
+      isLoading: true
     }
   },
   computed: {
@@ -104,20 +108,20 @@ export default {
     async saveData(data) {
       console.log('saveData', data)
 
+      this.clickedOnMap = false
+      this.isLoading = true
+
       const { lat, lng } = this.selectedCoords
-      const saveResponse = await requests.createPin(
-        {
-          name: data.name,
-          description: data.description,
-          date: data.date,
-          companions: data.companions,
-          duration: data.duration,
-          budget: data.budget,
-          latitude: lat,
-          longitude: lng
-        },
-        this.token
-      )
+      const saveResponse = await requests.createPin({
+        name: data.name,
+        description: data.description,
+        date: data.date,
+        companions: data.companions,
+        duration: data.duration,
+        budget: data.budget,
+        latitude: lat,
+        longitude: lng
+      })
 
       // add the marker
       this.markers.push({
@@ -128,13 +132,18 @@ export default {
       // add also the polygon (returned by the post request)
       console.log('saveResponse', saveResponse)
       let polygonLatlngs = saveResponse.polygon
-      this.polygons.push({
-        key: this.polygons.length + 1,
-        latlngs: polygonLatlngs,
-        color: getRandomPastelColor(),
-        polygonname: saveResponse.polygonname
-      })
-      this.clickedOnMap = false
+
+      // only add the polygon if does not exist yet
+      if (!this.polygons.find((polygon) => polygon.polygonname === saveResponse.polygonname)) {
+        this.polygons.push({
+          key: this.polygons.length + 1,
+          latlngs: polygonLatlngs,
+          color: getRandomPastelColor(),
+          polygonname: saveResponse.polygonname
+        })
+      }
+
+      this.isLoading = false
     },
     /**
      * Cancels the DataInputDialog
@@ -143,6 +152,8 @@ export default {
       this.clickedOnMap = false
     },
     async updatePinsAndPolygons() {
+
+      this.isLoading = true
       this.markers = []
       this.polygons = []
 
@@ -161,13 +172,18 @@ export default {
       for (let i = 0; i < pins.length; i++) {
         const pin = pins[i]
         const polygonLatlngs = pin.polygon
-        this.polygons.push({
-          key: this.polygons.length + 1,
-          latlngs: polygonLatlngs,
-          color: getRandomPastelColor(),
-          polygonname: pin.polygonname
-        })
+
+        // only add the polygon if does not exist yet
+        if (!this.polygons.find((polygon) => polygon.polygonname === pin.polygonname)) {
+          this.polygons.push({
+            key: this.polygons.length + 1,
+            latlngs: polygonLatlngs,
+            color: getRandomPastelColor(),
+            polygonname: pin.polygonname
+          })
+        }
       }
+      this.isLoading = false
     }
   },
   async mounted() {

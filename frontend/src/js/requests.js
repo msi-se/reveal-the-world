@@ -1,8 +1,5 @@
 import { TENANT, BACKEND_URL } from "./config";
 
-/**
- * @param {string} username
- */
 export async function getPins() {
     try {
         const response = await fetch(`${BACKEND_URL}/pin/`, {
@@ -22,21 +19,8 @@ export async function getPins() {
     }
 }
 
-// pin: {
-// userId
-// longitude
-// latitude
-// name
-// description
-// date
-// companions
-// duration
-// budget
-// }
-
 /**
- * @param {{username: string, longitude: number, latitude: number, name: string, description: string, date: string, companions: string, duration: string, budget: string}} pin
- * @param {string} token
+ * @param {{longitude: number, latitude: number, name: string, description: string, date: string, companions: string, duration: string, budget: string}} pin
  */
 export async function createPin(pin) {
     try {

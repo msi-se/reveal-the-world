@@ -1,28 +1,35 @@
 <template>
   <v-layout>
     <v-app-bar :elevation="16" :color="tenantBackgroundColor">
-      <img
-        alt="logo-black"
-        :src="TENANT_LOGO"
-        width="200"
-        class="d-inline-block align-top ml-2"
-        style="cursor: pointer"
-      />
+      <a :href="`${PATH}/`" class="d-inline-block ml-2 align-middle">
+        <img
+          alt="logo-white"
+          :src="TENANT_LOGO"
+          width="200"
+          style="cursor: pointer"
+        />
+      </a>
       <a :href="`${PATH}/`" style="text-decoration: none; color: inherit">
         <div class="mr-15 ml-4 app-bar-title" style="cursor: pointer">
-          {{ TENANT }}
+          {{ TENANT === 'default' ? '' : TENANT }}
         </div>
       </a>
       <v-spacer></v-spacer>
-      <a :href="`${PATH}/pin`">
-        <v-btn class="mr-2"> My Travel Records </v-btn>
+      <a :href="`${PATH}/pin`" v-if="isLoggedIn">
+        <v-btn class="mr-2"> My Pins </v-btn>
       </a>
       <a :href="`${PATH}/heatmap`">
         <v-btn class="mr-2"> Heatmap </v-btn>
       </a>
       <!-- display login state -->
       <div v-if="isLoggedIn" class="mr-2">
-        <p>Logged in as {{ username }}</p>
+        <p>{{ username }}</p>
+      </div>
+      <div v-if="isLoggedIn">
+        <v-btn @click="logout" class="mr-2"> Logout </v-btn>
+      </div>
+      <div v-else>
+        <v-btn @click="login" class="mr-2"> Login </v-btn>
       </div>
     </v-app-bar>
     <v-main>

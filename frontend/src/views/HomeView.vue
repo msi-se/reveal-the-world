@@ -1,28 +1,27 @@
 <template>
-    <h1>Home</h1>
-    <div v-if="isLoggedIn">
-        <p>Logged in as {{ username }}</p>
-        <button @click="logout">Logout</button>
-    </div>
-    <div v-else>
-        <button @click="login">Login</button>
+    <div class="mt-4 ml-4 mr-4">
+
+        <h1>Welcome to Reveal the World!</h1>
+
+        <p>Reveal the World is a platform to visualize your travels. You can mark the places you have already visited on a world map and color in regions. Like with an analog scratch map -- just cooler!</p>
+        <br>
+        <p>You can also check the heatmap to see which regions of the world are particularly frequently visited.</p>
+        <br>
+        <br>
+        <strong>Color your world!</strong>
+
+        <div class="mt-4">
+            <v-img
+                alt="demo"
+                :src="`/demo.png`"
+                width="100%"
+            />
+
+        </div>
+
     </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { getUser, login, logout } from '../js/user';
-
-// get userDetails from cookie with regex match
-
-let isLoggedIn = computed(() => {
-    return getUser() !== null;
-});
-
-let username = computed(() => {
-    return getUser().username;
-});
-
-console.log(getUser());
 
 </script>
