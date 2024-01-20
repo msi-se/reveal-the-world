@@ -131,6 +131,10 @@ async function update() {
         let aggregatedPinsLastMonth = [];
         for (let i = 0; i < pins.length; i++) {
             const pin = pins[i];
+
+            // only consider pins of the current tenant
+            if (pin.tenant !== tenant) continue;
+            
             amountOfPinsTotal++;
             let pinDate = new Date(pin.date);
             if (pinDate > startOfLastMonth && pinDate < endOfLastMonth) {
