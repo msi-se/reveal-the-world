@@ -1,7 +1,11 @@
 name: Run Azure Login with OIDC
 on: 
   workflow_dispatch:
-
+    inputs:
+      parameter_name:
+        description: 'Description of the input parameter'
+        required: false
+        default: 'default_value'
 permissions:
       id-token: write
       contents: read
