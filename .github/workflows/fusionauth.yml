@@ -1,14 +1,19 @@
 name: Update Fusionauth
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'deployement/k8s/fusionauth.yaml'
 
 env:
   ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
   ORG_NAME: ${{ secrets.ORG_NAME }}
   REPO_NAME: ${{ secrets.REPO_NAME }}
 
-jobs:     
-  build-and-deploy-aks:
+jobs:
+  build-and-deploy-fusionauth:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
@@ -18,7 +23,7 @@ jobs:
         uses: azure/login@v1
         with:
           auth-type: IDENTITY
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}          
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
@@ -34,9 +39,8 @@ jobs:
           kubectl create secret generic posgresqlrootpassword --from-literal=DATABASE_ROOT_PASSWORD=${{ secrets.POSTGRESQL_ROOT_PASSWORD }}
           kubectl create secret generic fusionauthdatabaseusername --from-literal=DATABASE_USERNAME=${{ secrets.FUSIONAUTH_DATABASE_USERNAME }}
           kubectl create secret generic fusionauthdatabasepassword --from-literal=DATABASE_PASSWORD=${{ secrets.FUSIONAUTH_DATABASE_PASSWORD }}
-      
+
       - name: Kubernetes deploy
-        continue-on-error: true
         working-directory: deployement/k8s
         run: |
           az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
