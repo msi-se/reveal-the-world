@@ -8,6 +8,9 @@ jobs:
   build-and-deploy:
     runs-on: self-hosted
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Azure login
         uses: azure/login@v1
         with:
