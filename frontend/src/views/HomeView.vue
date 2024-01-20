@@ -1,7 +1,7 @@
 <template>
     <div class="mt-4 ml-4 mr-4">
 
-        <h1>Welcome to Reveal the World!</h1>
+        <h1>Welcome to <b>Reveal the World!</b></h1>
 
         <p>Reveal the World is a platform to visualize your travels. You can mark the places you have already visited on a world map and color in regions. Like with an analog scratch map -- just cooler!</p>
         <br>
