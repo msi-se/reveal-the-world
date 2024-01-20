@@ -7,6 +7,9 @@ env:
   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
   ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
   ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+  ORG_NAME: ${{ secrets.ORG_NAME }}
+  REPO_NAME: ${{ secrets.REPO_NAME }}
+
 
 jobs: 
   build-and-deploy-datastore:
