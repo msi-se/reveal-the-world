@@ -16,10 +16,8 @@ await client.connect();
 const database = client.db("reveal-the-world");
 
 // setup collections
-const userCollection = database.collection("user");
 const pinCollection = database.collection("pin");
 const polygonCollection = database.collection("polygon");
-const heatRegionCollection = database.collection("heatRegion");
 
 // start express server
 const app = express();
@@ -30,12 +28,20 @@ app.use(auth);
 const debug = (...args) => { console.log(...args); };
 
 app.post("/", async (req, res) => {
-    let pin = req.body;
-
+    
+    let pin = {
+        name: req.body.name,
+        description: req.body.description,
+        latitude: req.body.latitude,
+        longitude: req.body.longitude,
+        date: req.body.date,
+        companions: req.body.companions,
+        duration: req.body.duration,
+        rating: req.body.rating,
+        username: req.user.username,
+        tenant: req.user.tenant,
+    }
     debug("pin-service: received pin: ", pin);
-
-    pin.username = req.user.username;
-
     debug("pin-service: username in request: ", req.user.username);
 
     const { polygon, polygonname } = await getPolygonAndName(pin.latitude, pin.longitude);
@@ -59,11 +65,10 @@ app.post("/", async (req, res) => {
 });
 
 app.get("/", async (req, res) => {
-    const user = req.user;
 
     debug("pin-service: username in get request: ", req.user.username);
 
-    const pins = await pinCollection.find({ "username": req.user.username }).toArray();
+    const pins = await pinCollection.find({ "username": req.user.username, "tenant": req.user.tenant }).toArray();
 
     // add the polygon outlines to the pins
     const polygonnames = pins.map(pin => pin.polygonname);

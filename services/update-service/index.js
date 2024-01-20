@@ -30,6 +30,8 @@ app.use(express.json());
 app.use(cookieParser());
 // app.use(auth);
 
+const debug = (...args) => { console.log(...args); };
+
 // define routes
 app.get("/", (req, res) => {
 
@@ -55,93 +57,114 @@ app.listen(port, () => {
 async function update() {
     // get all pins
     const pins = await pinCollection.find({}).toArray();
+    const tenants = [...new Set(pins.map((pin) => pin.tenant))];
 
-    // aggregate the pins by polygon
-    const heatRegions = [];
-    for (let i = 0; i < pins.length; i++) {
-        const pin = pins[i];
-        const polygonname = pin.polygonname;
-        // const polygon = await polygonCollection.findOne({ polygonname: polygonname });
-        // if (polygon) {
-        const index = heatRegions.findIndex((heatRegion) => heatRegion.polygonname === polygonname);
-        if (index === -1) {
-            heatRegions.push({ polygonname: polygonname, density: 1, count: 1 });
-        } else {
-            heatRegions[index].count++;
-        }
-        // }
+    debug("update-service: tenants: ", tenants);
+
+    // aggregate the pins by polygon and by tenant
+    let heatRegionStates = [];
+    for (let i = 0; i < tenants.length; i++) {
+        const tenant = tenants[i];
+        const heatRegions = [];
+        pins.forEach((pin) => {
+
+            // only consider pins of the current tenant
+            if (pin.tenant !== tenant) return;
+            const polygonname = pin.polygonname;
+            const index = heatRegions.findIndex((heatRegion) => heatRegion.polygonname === polygonname);
+            if (index === -1) {
+                heatRegions.push({ polygonname: polygonname, density: 1, count: 1 });
+            } else {
+                heatRegions[index].count++;
+            }
+        });
+
+        // check if there are heat regions without a polygon -> if so, remove them
+        debug("update-service: heat regions: ", heatRegions.map((heatRegion) => heatRegion.polygonname));
+        const polygons = await polygonCollection.find({ polygonname: { $in: heatRegions.map((heatRegion) => heatRegion.polygonname) } }).toArray();
+        debug("update-service: polygons: ", polygons.length);
+        const heatRegionsWithPolygon = [];
+        heatRegions.forEach((heatRegion) => {
+            const polygon = polygons.find((polygon) => polygon.polygonname === heatRegion.polygonname);
+            if (polygon) {
+                heatRegionsWithPolygon.push(heatRegion);
+            }
+        });
+
+        // calculate the density for each region
+        const maxDensity = heatRegionsWithPolygon.reduce((max, heatRegion) => Math.max(max, heatRegion.count), 0);
+        heatRegionsWithPolygon.forEach((heatRegion) => {
+            heatRegion.density = heatRegion.count / maxDensity;
+        });
+
+        const heatRegionState = {
+            timestamp: new Date().toISOString(),
+            heatRegions: heatRegionsWithPolygon,
+            tenant: tenant
+        };
+        heatRegionStates.push(heatRegionState);
+
+        debug("update-service: heat region state: ", heatRegionState);
+
     };
-
-    // check if there are heat regions without a polygon -> if so, remove them
-    const polygons = await polygonCollection.find({ polygonname: { $in: heatRegions.map((heatRegion) => heatRegion.polygonname) } }).toArray();
-    const heatRegionsWithPolygon = [];
-    heatRegions.forEach((heatRegion) => {
-        const polygon = polygons.find((polygon) => polygon.polygonname === heatRegion.polygonname);
-        if (polygon) {
-            heatRegionsWithPolygon.push(heatRegion);
-        }
-    });
-
-    // calculate the density for each region
-    const maxDensity = heatRegionsWithPolygon.reduce((max, heatRegion) => Math.max(max, heatRegion.count), 0);
-    heatRegionsWithPolygon.forEach((heatRegion) => {
-        heatRegion.density = heatRegion.count / maxDensity;
-    });
-
-    // save the heat regions
-    const heatRegionState = {
-        timestamp: new Date().toISOString(),
-        heatRegions: heatRegionsWithPolygon,
-    };
-    await heatRegionStateCollection.insertOne(heatRegionState);
+    await heatRegionStateCollection.insertMany(heatRegionStates);
 
     /* analytics */
 
     // calculate bestVisitedRegionInTheLastMonth, amountOfPinsTotal, amountOfPinsLastMonth // TODO: later more analytics properties
-    let bestVisitedRegionInTheLastMonth = "";
-    let amountOfPinsTotal = 0;
-    let amountOfPinsLastMonth = 0;
 
-    let lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    let startOfLastMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1);
-    let endOfLastMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
-    let bestVisitedRegionInTheLastMonthCount = 0;
+    let analyticsStates = [];
+    for (let i = 0; i < tenants.length; i++) {
+        const tenant = tenants[i];
 
-    // calculate the analytics
-    let aggregatedPinsLastMonth = [];
-    for (let i = 0; i < pins.length; i++) {
-        const pin = pins[i];
-        amountOfPinsTotal++;
-        let pinDate = new Date(pin.date);
-        if (pinDate > startOfLastMonth && pinDate < endOfLastMonth) {
-            amountOfPinsLastMonth++;
-        }
-        if (pin.polygonname) {
+        let bestVisitedRegionInTheLastMonth = "";
+        let amountOfPinsTotal = 0;
+        let amountOfPinsLastMonth = 0;
+
+        let lastMonth = new Date();
+        lastMonth.setMonth(lastMonth.getMonth() - 1);
+        let startOfLastMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth(), 1);
+        let endOfLastMonth = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0);
+        let bestVisitedRegionInTheLastMonthCount = 0;
+
+        // calculate the analytics
+        let aggregatedPinsLastMonth = [];
+        for (let i = 0; i < pins.length; i++) {
+            const pin = pins[i];
+            amountOfPinsTotal++;
+            let pinDate = new Date(pin.date);
             if (pinDate > startOfLastMonth && pinDate < endOfLastMonth) {
-                const index = aggregatedPinsLastMonth.findIndex((aggregatedPin) => aggregatedPin.polygonname === pin.polygonname);
-                if (index === -1) {
-                    aggregatedPinsLastMonth.push({ polygonname: pin.polygonname, count: 1 });
-                } else {
-                    aggregatedPinsLastMonth[index].count++;
+                amountOfPinsLastMonth++;
+            }
+            if (pin.polygonname) {
+                if (pinDate > startOfLastMonth && pinDate < endOfLastMonth) {
+                    const index = aggregatedPinsLastMonth.findIndex((aggregatedPin) => aggregatedPin.polygonname === pin.polygonname);
+                    if (index === -1) {
+                        aggregatedPinsLastMonth.push({ polygonname: pin.polygonname, count: 1 });
+                    } else {
+                        aggregatedPinsLastMonth[index].count++;
+                    }
                 }
             }
-        }
-    };
-    aggregatedPinsLastMonth.forEach((aggregatedPin) => {
-        if (aggregatedPin.count > bestVisitedRegionInTheLastMonthCount) {
-            bestVisitedRegionInTheLastMonthCount = aggregatedPin.count;
-            bestVisitedRegionInTheLastMonth = aggregatedPin.polygonname;
-        }
-    });
+        };
+        aggregatedPinsLastMonth.forEach((aggregatedPin) => {
+            if (aggregatedPin.count > bestVisitedRegionInTheLastMonthCount) {
+                bestVisitedRegionInTheLastMonthCount = aggregatedPin.count;
+                bestVisitedRegionInTheLastMonth = aggregatedPin.polygonname;
+            }
+        });
 
-    // save the analytics
-    const analyticsState = {
-        timestamp: new Date().toISOString(),
-        bestVisitedRegionInTheLastMonth: bestVisitedRegionInTheLastMonth,
-        amountOfPinsTotal: amountOfPinsTotal,
-        amountOfPinsLastMonth: amountOfPinsLastMonth,
-    };
-    await analyticsStateCollection.insertOne(analyticsState);
+        // save the analytics
+        const analyticsState = {
+            timestamp: new Date().toISOString(),
+            bestVisitedRegionInTheLastMonth: bestVisitedRegionInTheLastMonth,
+            amountOfPinsTotal: amountOfPinsTotal,
+            amountOfPinsLastMonth: amountOfPinsLastMonth,
+            tenant: tenant
+        };
+        analyticsStates.push(analyticsState);
 
+    };
+
+    await analyticsStateCollection.insertMany(analyticsStates);
 }
