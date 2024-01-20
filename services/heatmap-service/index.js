@@ -38,8 +38,10 @@ app.get("/", async (req, res) => {
 
     debug("heatmap-service: GET /");
 
+    const tenant = `${req.headers?.tenant}`;
+
     // get the current heat region state
-    const heatRegionState = await heatRegionStateCollection.find({}).sort({ "timestamp": -1 }).limit(1).next();
+    const heatRegionState = await heatRegionStateCollection.find({ tenant: tenant }).sort({ "timestamp": -1 }).limit(1).next();
     if (!heatRegionState) {
         debug("heatmap-service: no heat region state found");
         res.status(400).send("No heat region state found");
