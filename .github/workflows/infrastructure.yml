@@ -1,0 +1,35 @@
+name: Run terraform init
+on: [push]
+
+env:
+  ARM_USE_MSI: true
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+
+jobs: 
+  build-and-deploy-datastore:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+      - name: Terraform
+        working-directory: deployement/datastore-deployment
+        run: |
+          terraform init
+          terraform plan -out datastore.tfplan
+          terraform apply datastore.tfplan
+          MONGODB_URI=$(terraform output -raw cosmos_connection_string)
+          POSTGRESQL_FQDN=$(terraform output -raw posgresql_fqdn)
+          POSTGRESQL_ROOT_USERNAME=$(terraform output -raw posgresql_admin_username)
+          POSTGRESQL_ROOT_PASSWORD=$(terraform output -raw posgresql_admin_password)
+          REGISTRY_PASSWORD=$(terraform output -raw acr_token)
+          REGISTRY_USERNAME=$(terraform output -raw acr_token_name)
+          REGISTRY=$(terraform output -raw acr_server_name)
+          REGISTRY_ID=$(terraform output -raw acr_id)
+          keys=("REGISTRY" "POSTGRESQL_FQDN")
+          for item in "${keys[@]}"; do
+            echo $item
+          done
