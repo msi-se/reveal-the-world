@@ -1,7 +1,6 @@
 import express from "express";
 import { MongoClient } from "mongodb";
 import cookieParser from 'cookie-parser';
-import auth from "./auth-middleware.js";
 
 // use .env file in parent directory (only needed for local development)
 import dotenv from "dotenv";
@@ -16,7 +15,6 @@ await client.connect();
 const database = client.db("reveal-the-world");
 
 // setup collections
-// analyticsState = { timestamp: string, bestVisitedRegionInTheLastMonth: string, amountOfPinsTotal: number, amountOfPinsLastMonth: number }
 const analyticsStateCollection = database.collection("analytics");
 
 // start express server
@@ -24,7 +22,6 @@ const app = express();
 const port = 3004;
 app.use(express.json());
 app.use(cookieParser());
-// app.use(auth);
 
 // define routes
 app.get("/:tenant", async (req, res) => {

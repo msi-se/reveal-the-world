@@ -1,7 +1,6 @@
 import express from "express";
 import { MongoClient } from "mongodb";
 import cookieParser from 'cookie-parser';
-import auth from "./auth-middleware.js";
 
 // use .env file in parent directory (only needed for local development)
 import dotenv from "dotenv";
@@ -18,7 +17,6 @@ const database = client.db("reveal-the-world");
 // setup collections
 const pinCollection = database.collection("pin");
 const polygonCollection = database.collection("polygon");
-// heatRegionsState = { timestamp: string, heatRegions: [{ polygonname: string, density: number (0-1), count: number }] }
 const heatRegionStateCollection = database.collection("heatRegionState");
 const analyticsStateCollection = database.collection("analytics");
 
@@ -28,7 +26,6 @@ const app = express();
 const port = 3005;
 app.use(express.json());
 app.use(cookieParser());
-// app.use(auth);
 
 const debug = (...args) => { console.log(...args); };
 

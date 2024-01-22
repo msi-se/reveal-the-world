@@ -33,7 +33,7 @@ const appURL = process.env.appURL;
 const fusionAuthURL = process.env.fusionAuthURL;
 const internalFusionAuthURL = process.env.internalFusionAuthURL;
 
-// Validate the token signature, make sure it wasn't expired
+// validate the token signature, make sure it wasn't expired
 const validateUser = async (userTokenCookie) => {
   // Make sure the user is authenticated.
   if (!userTokenCookie || !userTokenCookie?.access_token) {
@@ -50,7 +50,6 @@ const validateUser = async (userTokenCookie) => {
     return false;
   }
 }
-
 
 const getKey = async (header, callback) => {
   const jwks = jwksClient({
@@ -136,6 +135,7 @@ app.get('/oauth-redirect', async (req, res, next) => {
     }
     const accessToken = response.successResponse;
 
+    // 
     if (!accessToken.access_token) {
       console.error('Failed to get Access Token')
       return;
@@ -144,19 +144,16 @@ app.get('/oauth-redirect', async (req, res, next) => {
 
     // Exchange Access Token for User
     response = await client.retrieveUserUsingJWT(accessToken.access_token);
-    
     if (response.statusCode !== 200) {
       console.error('Failed to get User from access token, redirecting home.');
       res.redirect(302, tenantToPath(tenant));
     }
     const userResponse = response.successResponse;
-
     if (!userResponse?.user) {
       console.error('Failed to get User from access token, redirecting home.');
       res.redirect(302, tenantToPath(tenant));
     }
     res.cookie(`${tenant}-${userDetails}`, userResponse.user);
-
     res.redirect(302, tenantToPath(tenant));
   } catch (err) {
     console.error(err);
@@ -168,7 +165,6 @@ app.get('/oauth-redirect', async (req, res, next) => {
 
 app.get('/logout', (req, res, next) => {
   const clientId = `${req.query?.clientId}`;
-
   res.redirect(302, `${fusionAuthURL}/oauth2/logout?client_id=${clientId}`);
 });
 
@@ -183,7 +179,6 @@ app.get('/oauth2/logout', (req, res, next) => {
   console.log('Logging out...')
   res.clearCookie(`${tenant}-${userToken}`);
   res.clearCookie(`${tenant}-${userDetails}`);
-
   res.redirect(302, tenantToPath(tenant));
 });
 

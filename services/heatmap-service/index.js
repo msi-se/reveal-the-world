@@ -30,8 +30,6 @@ const app = express();
 const port = 3003;
 app.use(express.json());
 app.use(cookieParser());
-// app.use(auth);
-
 
 // define routes
 app.get("/", async (req, res) => {
