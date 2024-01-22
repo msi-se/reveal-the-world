@@ -74,9 +74,9 @@ async function create(tenantName) {
     }
 }
 
-function createK8sFrontendYaml(tenant, applicationId, port, backgroundColor) {
+function createK8sFrontendYaml(tenant, applicationId, port, logo, backgroundColor) {
     let frontendYaml = fs.readFileSync('./frontend-template.yaml', 'utf8');
-    const replacements = { "%tenant%": tenant, "%applicationId%": applicationId, "%port%": port, "%backgroundColor%": backgroundColor };
+    const replacements = { "%tenant%": tenant, "%applicationId%": applicationId, "%port%": port, "%logo%": logo, "%backgroundColor%": backgroundColor };
     let frontendTenantYaml = frontendYaml.replace(/%\w+%/g, function(all) {
         return replacements[all] || all;
     });
@@ -97,7 +97,8 @@ function appendTenantToIngress(tenant, port) {
 async function main() {
     const tenant = prompt("Tenant: ");
     const port = prompt("Port: ");
-    const backgroundColor = "#" + prompt("Background-Color: #");
+    const logo = prompt("Logo-Path: ") || "default-logo.png";
+    const backgroundColor = "#" + prompt("Background-Color: #") || "FFFFFF";
     if (!tenant || !port || !backgroundColor) {
         console.log("Tenant, port and background-color are required");
         return;
@@ -107,7 +108,7 @@ async function main() {
     console.log(`- Tenant ID: ${tenantId}`);
     console.log(`- Application ID: ${applicationId}`);
     console.log();
-    createK8sFrontendYaml(tenant, applicationId, port, backgroundColor);
+    createK8sFrontendYaml(tenant, applicationId, port, logo, backgroundColor);
     appendTenantToIngress(tenant, port);
 }
 

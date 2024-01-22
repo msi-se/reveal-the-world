@@ -25,6 +25,8 @@ spec:
             value: adac
           - name: VITE_TENANT_CLIENT_ID
             value: 8038c50d-f338-49c0-8ea3-7bdf2965677e
+          - name: VITE_TENANT_LOGO
+            value: /adac-logo.png
           - name: VITE_TENANT_BACKGROUNDCOLOR
             value: "#FFFF00"
 ---

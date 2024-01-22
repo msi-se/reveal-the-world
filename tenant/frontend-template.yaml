@@ -25,6 +25,8 @@ spec:
             value: %tenant%
           - name: VITE_TENANT_CLIENT_ID
             value: %applicationId%
+          - name: VITE_TENANT_LOGO
+            value: %logo%
           - name: VITE_TENANT_BACKGROUNDCOLOR
             value: "%backgroundColor%"
 ---
