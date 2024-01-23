@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - 'deployement/k8s/*'
+      - 'deployement/k8s/**'
       - '!deployement/k8s/fusionauth.yaml'
 
 env:
@@ -62,3 +62,9 @@ jobs:
         run: |
           az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
           ls | grep ".yaml$" | xargs -L 1 -d '\n' kubectl apply -f
+      
+      - name: Kubernetes deploy jobs
+        working-directory: deployement/k8s/jobs
+        run: |
+          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP_NAME }} --name ${{ secrets.KUBERNETES_CLUSTER_NAME }}
+          ls | grep ".yaml$" | xargs -L 1 -d '\n' kubectl apply -f    

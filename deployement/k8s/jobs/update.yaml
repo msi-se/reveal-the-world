@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: update-job
+spec:
+  schedule: "0 * * * *"
+  successfulJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: update-job
+            image: curlimages/curl
+            imagePullPolicy: IfNotPresent
+            envFrom:
+              - secretRef:
+                  name: appurl
+            command: ["curl"]
+            args: ["$(appURL)/api/update"]
+          restartPolicy: OnFailure
