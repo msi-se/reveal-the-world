@@ -143,6 +143,18 @@ resource "azurerm_cosmosdb_mongo_collection" "analytics" {
   }
 }
 
+# telemetry
+resource "azurerm_cosmosdb_mongo_collection" "telemetry" {
+  name                = "telemetry"
+  resource_group_name = azurerm_cosmosdb_account.cosmos.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmos.name
+  database_name       = azurerm_cosmosdb_mongo_database.reveal-the-world.name
+  index {
+    keys   = ["_id"]
+    unique = true
+  }
+}
+
 # Posgresql
 resource "random_password" "postgres_password" {
   length           = 16
