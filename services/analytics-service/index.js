@@ -16,6 +16,7 @@ const database = client.db("reveal-the-world");
 
 // setup collections
 const analyticsStateCollection = database.collection("analytics");
+const telemetryCollection = database.collection("telemetry");
 
 // start express server
 const app = express();
@@ -33,6 +34,14 @@ app.get("/:tenant", async (req, res) => {
         res.status(400).send("No analytics state found");
         return;
     }
+
+    // add a +1 to the telemetryCollection for the tenant
+    await telemetryCollection.insertOne({
+        tenant: tenant,
+        timestamp: new Date(),
+        type: "analytics",
+        action: "get"
+    });
 
     // send the analytics state
     res.status(200).send(analyticsState);
