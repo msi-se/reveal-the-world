@@ -28,7 +28,7 @@ spec:
           - name: VITE_TENANT_LOGO
             value: /adac-logo.png
           - name: VITE_TENANT_BACKGROUNDCOLOR
-            value: "#FFFF00"
+            value: "#f7d146"
 ---
 apiVersion: v1
 kind: Service
