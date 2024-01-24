@@ -59,10 +59,3 @@ spec:
             name: frontend-adac
             port:
               number: 4000
-      - path: /bawu(/|$)(.*)
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: frontend-bawu
-            port:
-              number: 4001
