@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-bawu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-bawu
+  template:
+    metadata:
+      labels:
+        app: frontend-bawu
+    spec:
+      containers:
+      - name: frontend-bawu
+        image: rtwcr1.azurecr.io/frontend
+        ports:
+        - containerPort: 3000
+        envFrom:
+          - secretRef:
+              name: vitebackendurl
+        env:
+          - name: VITE_TENANT
+            value: bawu
+          - name: VITE_TENANT_CLIENT_ID
+            value: 528054c8-25a5-4930-94ad-3626b239a2c6
+          - name: VITE_TENANT_LOGO
+            value: https://www.designmadeingermany.de/2013/wp-content/uploads/formidable/4/e2140f107138a3effe0b8d319aa49a03.jpeg
+          - name: VITE_TENANT_BACKGROUNDCOLOR
+            value: "#fefd55"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-bawu
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 4001
+    targetPort: 3000
+  selector:
+    app: frontend-bawu
